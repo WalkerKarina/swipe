@@ -1,0 +1,45 @@
+/* App.css */
+
+.container {
+    background-color: #6CC3AC;
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 400px;
+    margin: 50px auto;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    font-family: sans-serif;
+    color: #004D40;
+  }
+  
+  .label {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  
+  .button {
+    background-color: #004D40;
+    color: #F2F2F2;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    margin-top: 30px;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .title {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  

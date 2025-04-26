@@ -1,0 +1,163 @@
+.landing-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #5CAEA2;
+  overflow: hidden;
+}
+
+.landing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 3rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  height: 160px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.login-button {
+  background-color: transparent;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  border: 1px solid white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.login-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.landing-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.content-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-right: 2rem;
+  margin-top: -3rem;
+}
+
+.content-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.landing-container h1 {
+  font-size: 5.5rem;
+  margin-bottom: 2rem;
+  color: white;
+  font-weight: 300;
+  line-height: 1.1;
+  max-width: 700px;
+}
+
+.tagline {
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+  color: #666;
+  max-width: 800px;
+}
+
+.features {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.feature {
+  flex: 1;
+  min-width: 250px;
+  max-width: 350px;
+  padding: 1.5rem;
+  margin: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.feature h3 {
+  color: #2e7bf6;
+  margin-bottom: 1rem;
+}
+
+.cta-button {
+  background-color: white;
+  color: #333;
+  padding: 0.8rem 2rem;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.cta-button:hover {
+  background-color: #f0f0f0;
+}
+
+.card-image {
+  max-width: 100%;
+  height: auto;
+  transform: perspective(800px) rotateY(-15deg);
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.2));
+  transition: all 0.5s ease;
+}
+
+.card-image:hover {
+  transform: perspective(800px) rotateY(-5deg) translateY(-10px);
+}
+
+@media (max-width: 1024px) {
+  .landing-content {
+    flex-direction: column;
+    padding: 2rem;
+  }
+
+  .content-left {
+    align-items: center;
+    text-align: center;
+    padding-right: 0;
+    margin-bottom: 3rem;
+  }
+
+  .landing-container h1 {
+    font-size: 3rem;
+    text-align: center;
+  }
+
+  .card-image {
+    max-width: 80%;
+    transform: none;
+  }
+} 
