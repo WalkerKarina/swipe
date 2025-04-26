@@ -90,8 +90,23 @@ const UserInfo: React.FC = () => {
 };
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   
+  // Show loading indicator while auth is being checked
+  if (loading) {
+    return (
+      <div className="loading-container" style={{ margin: '2rem auto' }}>
+        <div className="loading-spinner-wrapper">
+          <div className="spinner-only"></div>
+        </div>
+        <div className="loading-text-wrapper">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Only redirect when loading is complete and user is not present
   if (!user) {
     return <Navigate to="/" replace />;
   }

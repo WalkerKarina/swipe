@@ -216,14 +216,24 @@
 
 .amount {
   font-weight: 600;
+  display: flex;
+  justify-content: flex-end;
 }
 
-.positive {
-  color: #388E3C;
+/* Explicitly apply color to the entire amount span */
+.transaction-item .amount.positive {
+  color: #388E3C; /* Bright green */
+  font-weight: 700;
 }
 
-.negative {
-  color: #D32F2F;
+.transaction-item .amount.negative {
+  color: #D32F2F; /* Bright red */
+  font-weight: 700;
+}
+
+/* Transaction header amount should remain white */
+.transaction-header .amount {
+  color: white !important;
 }
 
 .account {

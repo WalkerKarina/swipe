@@ -155,7 +155,7 @@ const Transactions: React.FC = () => {
                     {transaction.institution_name && <span className="institution">({transaction.institution_name})</span>}
                   </span>
                   <span className={`amount ${transaction.amount < 0 ? 'negative' : 'positive'}`}>
-                    {formatCurrency(Math.abs(transaction.amount))}
+                    {formatCurrency(transaction.amount)}
                   </span>
                 </div>
               ))}
