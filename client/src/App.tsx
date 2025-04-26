@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import Profile from './pages/Profile/Profile';
 import Transactions from './pages/Transactions/Transactions';
@@ -63,13 +63,28 @@ const Sidebar: React.FC = () => {
 
 const UserInfo: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   if (!user) return null;
   
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+  
   return (
     <div className="user-info">
-      <div className="user-name">{user.name}</div>
-      <i className="fa-solid fa-bell"></i>
+      <div className="notification-icon">
+        <i className="fa-solid fa-bell"></i>
+      </div>
+      <div className="user-profile-info" onClick={handleProfileClick}>
+        <div className="user-profile-photo">
+          <i className="fa-solid fa-user-circle"></i>
+        </div>
+        <div className="user-details">
+          <div className="user-name">{user.name}</div>
+          <div className="user-email">{user.email}</div>
+        </div>
+      </div>
     </div>
   );
 };

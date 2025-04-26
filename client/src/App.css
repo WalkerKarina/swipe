@@ -155,26 +155,68 @@
 .user-info {
   position: absolute;
   top: 1.5rem;
-  right: 2rem;
+  right: 3rem;
   display: flex;
   align-items: center;
 }
 
-.user-name {
-  font-weight: 500;
-  color: #333;
-  margin-right: 1rem;
+.notification-icon {
+  margin-right: 1.5rem;
+  cursor: pointer;
 }
 
-.user-info i {
+.notification-icon i {
   font-size: 1.2rem;
   color: #666;
-  cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.user-info i:hover {
+.notification-icon i:hover {
   color: #5CAEA2;
+}
+
+.user-profile-info {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem;
+}
+
+.user-profile-info:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.user-profile-photo {
+  margin-right: 0.75rem;
+}
+
+.user-profile-photo i {
+  font-size: 2.5rem;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.user-profile-info:hover .user-profile-photo i {
+  color: #5CAEA2;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 700;
+  color: #000;
+  font-size: 1.1rem;
+  margin-bottom: 0.1rem;
+}
+
+.user-email {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 /* Profile page styles */
@@ -280,6 +322,22 @@
   .sidebar-nav a {
     padding: 0.75rem 0.75rem 0.75rem 1.5rem;
   }
+  
+  .user-profile-photo i {
+    font-size: 2.2rem;
+  }
+  
+  .user-name {
+    font-size: 1rem;
+  }
+  
+  .user-email {
+    font-size: 0.8rem;
+  }
+  
+  .user-info {
+    right: 2.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -347,7 +405,15 @@
   
   .user-info {
     top: 1rem;
-    right: 1rem;
+    right: 1.5rem;
+  }
+  
+  .user-email {
+    display: none;
+  }
+  
+  .user-profile-photo i {
+    font-size: 2rem;
   }
 }
 
