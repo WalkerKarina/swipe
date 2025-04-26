@@ -127,7 +127,7 @@ const Transactions: React.FC = () => {
           });
           setCardNameToIndexMap(mapping);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching cashback data for color mapping:', err);
       }
     };
