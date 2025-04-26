@@ -17,16 +17,18 @@
   left: 0;
   bottom: 0;
   z-index: 100;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
+  border-radius: 0 24px 24px 0;
+  overflow: hidden;
 }
 
 .sidebar-logo {
-  padding: 0.75rem 0;
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -47,40 +49,43 @@
 }
 
 .sidebar-nav li {
-  margin: 0;
-  padding: 0;
+  margin: 0.5rem 0;
+  padding: 0 1rem;
 }
 
 .sidebar-nav a {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
   text-decoration: none;
   color: white;
   font-size: 1rem;
   transition: all 0.2s ease;
+  border-radius: 12px;
 }
 
 .sidebar-nav a:hover, .sidebar-nav a.active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-nav a.active {
+  font-weight: 600;
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.sidebar-nav a svg, .sidebar-nav a i {
+.sidebar-nav a i {
   margin-right: 10px;
   font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
 }
 
 .sidebar-footer {
-  padding: 1rem 1.5rem;
+  padding: 1.5rem 1rem 1.5rem 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
+  margin-top: auto;
 }
 
 .user-profile-link {
@@ -88,24 +93,41 @@
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 0.5rem;
-  display: block;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.user-profile-link i {
+  margin-right: 10px;
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
 }
 
 .logout-button {
-  background-color: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  background-color: transparent;
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border: none;
+  padding: 0.75rem 0;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
+  text-align: left;
+  width: auto;
+}
+
+.logout-button i {
+  margin-right: 10px;
+  font-size: 1.2rem;
+  width: 24px;
   text-align: center;
-  width: 100%;
 }
 
 .logout-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Main content area */
@@ -114,6 +136,32 @@
   margin-left: 240px;
   padding: 2rem;
   width: calc(100% - 240px);
+}
+
+/* User info in top-right corner */
+.user-info {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #333;
+  margin-right: 1rem;
+}
+
+.user-info i {
+  font-size: 1.2rem;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.user-info i:hover {
+  color: #5CAEA2;
 }
 
 /* Profile page styles */
@@ -207,24 +255,43 @@
 }
 
 /* Add responsive styles */
+@media (max-width: 1024px) {
+  .sidebar-logo {
+    padding: 0.75rem 1.5rem;
+  }
+  
+  .sidebar-logo img {
+    height: 100px;
+  }
+  
+  .sidebar-nav a {
+    padding: 0.75rem 0.75rem 0.75rem 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 64px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 0 16px 16px 0;
   }
   
   .sidebar-logo {
     padding: 1rem 0;
+    justify-content: center;
   }
   
   .sidebar-logo img {
-    height: 30px;
+    height: 35px;
   }
   
   .sidebar-nav a span {
     display: none;
   }
   
-  .sidebar-nav a svg, .sidebar-nav a i {
+  .sidebar-nav a i {
     margin-right: 0;
     font-size: 1.4rem;
   }
@@ -234,13 +301,39 @@
     padding: 0.75rem;
   }
   
-  .user-profile-link, .sidebar-footer {
+  .sidebar-nav li {
+    padding: 0 0.5rem;
+  }
+  
+  .sidebar-footer {
+    padding: 1rem 0.5rem;
+  }
+  
+  .user-profile-link span, 
+  .logout-button span {
     display: none;
+  }
+  
+  .user-profile-link i,
+  .logout-button i {
+    margin-right: 0;
+    font-size: 1.4rem;
+  }
+  
+  .user-profile-link,
+  .logout-button {
+    justify-content: center;
   }
   
   .main-content {
     margin-left: 64px;
     width: calc(100% - 64px);
+    padding: 1rem;
+  }
+  
+  .user-info {
+    top: 1rem;
+    right: 1rem;
   }
 }
 
@@ -248,4 +341,27 @@
 .public-page, .link-accounts-page {
   width: 100%;
   margin-left: 0;
+}
+
+/* Recommendations page placeholder */
+.recs-placeholder {
+  max-width: 800px;
+  margin: 4rem auto 0;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.recs-placeholder h1 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.recs-placeholder p {
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.5;
 }

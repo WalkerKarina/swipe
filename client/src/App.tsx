@@ -29,32 +29,47 @@ const Sidebar: React.FC = () => {
         <ul>
           <li>
             <Link to="/home" className={location.pathname === '/home' ? 'active' : ''}>
-              <i className="fas fa-home"></i>
+              <i className="fa-solid fa-home"></i>
               <span>Dashboard</span>
             </Link>
           </li>
           <li>
             <Link to="/transactions" className={location.pathname === '/transactions' ? 'active' : ''}>
-              <i className="fas fa-credit-card"></i>
+              <i className="fa-solid fa-shopping-cart"></i>
               <span>Transactions</span>
             </Link>
           </li>
           <li>
-            <Link to="/profile" className={location.pathname === '/profile' ? 'active' : ''}>
-              <i className="fas fa-user"></i>
-              <span>Profile</span>
+            <Link to="/recs" className={location.pathname === '/recs' ? 'active' : ''}>
+              <i className="fa-solid fa-star"></i>
+              <span>Recs</span>
             </Link>
           </li>
         </ul>
       </nav>
       <div className="sidebar-footer">
         <Link to="/profile" className="user-profile-link">
-          {user.name}
+          <i className="fa-solid fa-user"></i>
+          <span>Profile</span>
         </Link>
         <button onClick={logout} className="logout-button">
-          Logout
+          <i className="fa-solid fa-sign-out-alt"></i>
+          <span>Log out</span>
         </button>
       </div>
+    </div>
+  );
+};
+
+const UserInfo: React.FC = () => {
+  const { user } = useAuth();
+  
+  if (!user) return null;
+  
+  return (
+    <div className="user-info">
+      <div className="user-name">{user.name}</div>
+      <i className="fa-solid fa-bell"></i>
     </div>
   );
 };
@@ -80,6 +95,7 @@ const AppRoutes: React.FC = () => {
   return (
     <>
       {!isPublicRoute && !isSpecialRoute && <Sidebar />}
+      {!isPublicRoute && !isSpecialRoute && <UserInfo />}
       <div className={isPublicRoute || isSpecialRoute ? 'public-page' : 'main-content'}>
         <Routes>
           {/* Public routes */}
@@ -118,6 +134,14 @@ const AppRoutes: React.FC = () => {
           <Route path="/transactions" element={
             <ProtectedRoute>
               <Transactions />
+            </ProtectedRoute>
+          } />
+          <Route path="/recs" element={
+            <ProtectedRoute>
+              <div className="recs-placeholder">
+                <h1>Recommendations</h1>
+                <p>Get personalized card recommendations based on your spending patterns.</p>
+              </div>
             </ProtectedRoute>
           } />
         </Routes>

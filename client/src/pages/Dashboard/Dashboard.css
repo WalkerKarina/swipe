@@ -1,6 +1,6 @@
 .dashboard-container {
   width: 100%;
-  padding: 2rem;
+  padding: 2rem 2.5rem;
   position: relative;
   min-height: 100vh;
   background-color: #f7f7f7;
@@ -19,6 +19,7 @@
   display: flex;
   align-items: flex-start;
   margin-bottom: 2.5rem;
+  padding-top: 2rem;
 }
 
 .header-content {
@@ -276,21 +277,12 @@
     grid-template-columns: 1fr;
   }
   
+  .dashboard-container {
+    padding: 1.5rem;
+  }
+  
   .dashboard-header {
-    margin-top: 100px;
-  }
-  
-  .header-content {
-    margin-top: 0;
-  }
-  
-  .logo-container {
-    top: 0.5rem;
-    left: 1rem;
-  }
-  
-  .dashboard-logo {
-    height: 100px;
+    padding-top: 1rem;
   }
   
   .chart-x-labels span {
