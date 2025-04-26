@@ -72,7 +72,7 @@ const Login: React.FC = () => {
         console.log('Sending login data:', loginData);
         const response = await authService.login(loginData);
         login(response.user, response.session.access_token);
-        navigate('/profile');
+        navigate('/home');
       }
     } catch (err) {
       console.error('Authentication error:', err);

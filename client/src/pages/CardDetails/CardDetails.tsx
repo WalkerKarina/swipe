@@ -52,7 +52,7 @@ const CardDetails: React.FC = () => {
   };
 
   const handleContinue = () => {
-    navigate('/profile');
+    navigate('/home');
   };
 
   return (

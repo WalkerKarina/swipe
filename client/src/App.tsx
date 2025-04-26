@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
         </ul>
       </nav>
       <div className="sidebar-footer">
-        <Link to="/profile" className="user-profile-link">
+        <Link to="/profile" className={location.pathname === '/profile' ? 'user-profile-link active' : 'user-profile-link'}>
           <i className="fa-solid fa-user"></i>
           <span>Profile</span>
         </Link>
