@@ -125,11 +125,82 @@ class ChaseSapphirePreferred(RewardsProgram):
         # Default reward rate (1x)
         return amount * self.rules["other"]
 
+class AmexGoldCard(RewardsProgram):
+    def __init__(self):
+        super().__init__("American Express Gold Card", {
+            "restaurants": 0.04,      # 4x points at restaurants worldwide
+            "supermarkets": 0.04,     # 4x points at U.S. supermarkets (up to $25,000 per year)
+            "travel": 0.03,           # 3x points on flights booked directly with airlines or on amextravel.com
+            "other": 0.01             # 1x points on other purchases
+        })
+        self.restaurant_categories = ["Food and Drink", "Restaurants", "Fast Food"]
+        self.supermarket_categories = ["Groceries", "Supermarkets"]
+        self.travel_categories = ["Airlines", "Travel", "Air Travel"]
+        self.travel_merchants = ["Amex Travel"]
+        self.yearly_supermarket_spend = 0
+        self.supermarket_limit = 25000
+
+    def calculate_rewards(self, transaction):
+        amount = abs(transaction['amount'])
+        category = transaction.get('category', '')
+        merchant_name = transaction.get('merchant_name', '') or ''
+        
+        # Check if transaction is at a restaurant (4x)
+        if any(cat.lower() in category.lower() for cat in self.restaurant_categories):
+            return amount * self.rules["restaurants"]
+        
+        # Check if transaction is at a supermarket (4x up to limit)
+        elif any(cat.lower() in category.lower() for cat in self.supermarket_categories):
+            # Check if we're still under the annual limit
+            if self.yearly_supermarket_spend + amount <= self.supermarket_limit:
+                self.yearly_supermarket_spend += amount
+                return amount * self.rules["supermarkets"]
+            else:
+                # Split the transaction if it crosses the limit
+                remaining_limit = self.supermarket_limit - self.yearly_supermarket_spend
+                if remaining_limit > 0:
+                    over_limit_amount = amount - remaining_limit
+                    self.yearly_supermarket_spend = self.supermarket_limit
+                    return (remaining_limit * self.rules["supermarkets"]) + (over_limit_amount * self.rules["other"])
+                else:
+                    return amount * self.rules["other"]
+        
+        # Check if transaction is travel (3x)
+        elif any(cat.lower() in category.lower() for cat in self.travel_categories) or \
+             any(merchant.lower() in merchant_name.lower() for merchant in self.travel_merchants):
+            return amount * self.rules["travel"]
+        
+        # Default reward rate (1x)
+        return amount * self.rules["other"]
+
+class WellsFargoActiveCash(RewardsProgram):
+    def __init__(self):
+        super().__init__("Wells Fargo Active Cash", {
+            "all_purchases": 0.02     # 2% cash rewards on purchases
+        })
+
+    def calculate_rewards(self, transaction):
+        amount = abs(transaction['amount'])
+        return amount * self.rules["all_purchases"]
+
+class CitiDoubleCash(RewardsProgram):
+    def __init__(self):
+        super().__init__("Citi Double Cash", {
+            "all_purchases": 0.02     # 1% when you buy + 1% when you pay = 2% cash back on all purchases
+        })
+
+    def calculate_rewards(self, transaction):
+        amount = abs(transaction['amount'])
+        return amount * self.rules["all_purchases"]
+
 # Map of account names to rewards programs
 REWARDS_PROGRAMS = {
     "Apple Card": AppleCardRewards(),
     "Bank of America Cash Rewards": BankOfAmericaCashRewards(),
     "Bank of America Customized Cash Rewards": BankOfAmericaCustomizedCashRewards(),
     "Discover It Student Cash Back": DiscoverItStudentCashBack(),
-    "Chase Sapphire Preferred": ChaseSapphirePreferred()
+    "Chase Sapphire Preferred": ChaseSapphirePreferred(),
+    "American Express Gold Card": AmexGoldCard(),
+    "Wells Fargo Active Cash": WellsFargoActiveCash(),
+    "Citi Double Cash": CitiDoubleCash()
 }

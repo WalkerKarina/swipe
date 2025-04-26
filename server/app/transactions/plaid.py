@@ -1048,6 +1048,21 @@ def get_cashback_summary(user_id=None):
                 # Use the Chase Sapphire Preferred Rewards program for all Chase transactions
                 rewards_program = REWARDS_PROGRAMS.get('Chase Sapphire Preferred')
                 logger.info(f"Matched Chase transaction to Chase Sapphire Preferred Rewards program")
+            # Check for American Express specifically
+            elif 'american express' in institution_name.lower() or 'amex' in institution_name.lower() or 'american express' in account_name.lower() or 'amex' in account_name.lower():
+                # Use the American Express Gold Card program for all Amex transactions
+                rewards_program = REWARDS_PROGRAMS.get('American Express Gold Card')
+                logger.info(f"Matched American Express transaction to Gold Card program")
+            # Check for Wells Fargo specifically
+            elif 'wells fargo' in institution_name.lower() or 'wells fargo' in account_name.lower():
+                # Use the Wells Fargo Active Cash program for all Wells Fargo transactions
+                rewards_program = REWARDS_PROGRAMS.get('Wells Fargo Active Cash')
+                logger.info(f"Matched Wells Fargo transaction to Active Cash program")
+            # Check for Citibank specifically
+            elif 'citibank' in institution_name.lower() or 'citi' in institution_name.lower() or 'citibank' in account_name.lower() or 'citi' in account_name.lower():
+                # Use the Citi Double Cash program for all Citibank transactions
+                rewards_program = REWARDS_PROGRAMS.get('Citi Double Cash')
+                logger.info(f"Matched Citibank transaction to Double Cash program")
             else:
                 # For other institutions, try to match based on program names
                 for program_name, program in REWARDS_PROGRAMS.items():
@@ -1167,6 +1182,18 @@ def get_optimal_cashback(user_id=None):
                 elif 'chase' in institution_name.lower() or 'chase' in account_name.lower():
                     actual_rewards_program = REWARDS_PROGRAMS.get('Apple Card')
                     actual_card_name = "Apple Card"
+                # Check for American Express specifically  
+                elif 'american express' in institution_name.lower() or 'amex' in institution_name.lower() or 'american express' in account_name.lower() or 'amex' in account_name.lower():
+                    actual_rewards_program = REWARDS_PROGRAMS.get('American Express Gold Card')
+                    actual_card_name = "American Express Gold Card"
+                # Check for Wells Fargo specifically
+                elif 'wells fargo' in institution_name.lower() or 'wells fargo' in account_name.lower():
+                    actual_rewards_program = REWARDS_PROGRAMS.get('Wells Fargo Active Cash')
+                    actual_card_name = "Wells Fargo Active Cash"
+                # Check for Citibank specifically
+                elif 'citibank' in institution_name.lower() or 'citi' in institution_name.lower() or 'citibank' in account_name.lower() or 'citi' in account_name.lower():
+                    actual_rewards_program = REWARDS_PROGRAMS.get('Citi Double Cash')
+                    actual_card_name = "Citi Double Cash"
                 else:
                     # For other institutions, try to match based on program names
                     for program_name, program in REWARDS_PROGRAMS.items():
