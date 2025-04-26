@@ -1,0 +1,385 @@
+.dashboard-container {
+  width: 100%;
+  padding: 2rem 2.5rem;
+  position: relative;
+  min-height: 100vh;
+  background-color: transparent;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+/* Loading styles - matching Transactions page */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  margin: 2rem auto;
+  max-width: 1200px;
+}
+
+.loading-spinner-wrapper {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.spinner-only {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(92, 174, 162, 0.1);
+  border-radius: 50%;
+  border-top-color: #5CAEA2;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: spinAnimation 1s linear infinite;
+}
+
+.loading-text-wrapper {
+  margin-top: 10px;
+}
+
+.loading-text-wrapper p {
+  margin: 0;
+  padding: 0;
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+}
+
+@keyframes spinAnimation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Can remove the old loading style */
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  padding-top: 3.5rem;
+  position: relative;
+  z-index: 5;
+}
+
+.header-content {
+  margin-top: 0;
+}
+
+.header-content h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.header-content p {
+  color: #666;
+  margin: 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  position: relative;
+  border: 1px solid #f0f0f0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+  width: 100%;
+}
+
+.card-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.card-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #333;
+  margin: 0 0 0.25rem 0;
+}
+
+.period {
+  font-size: 0.8rem;
+  color: #777;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.gift-icon, .chart-icon, .card-icon, .calendar-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background-color: #f7f7f7;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gift-icon i, .chart-icon i, .card-icon i, .calendar-icon i {
+  color: #5CAEA2;
+  font-size: 1.2rem;
+}
+
+.card-content {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #5CAEA2;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.donut-chart {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  margin: 0 auto;
+}
+
+.donut-hole {
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  background-color: white;
+  border-radius: 50%;
+  top: 20%;
+  left: 20%;
+}
+
+.donut-segment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.donut-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-label span:first-child {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.donut-label span:last-child {
+  display: block;
+  font-size: 0.7rem;
+  color: #777;
+}
+
+.card-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.card-rewards {
+  font-size: 1rem;
+  color: #5CAEA2;
+  margin: 0;
+  font-weight: 500;
+}
+
+.ytd-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Rewards Trend Chart */
+.rewards-chart-container {
+  margin-top: 2.5rem;
+  background-color: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.rewards-chart-container h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 1.5rem 0;
+}
+
+.rewards-chart {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.chart-area {
+  position: relative;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.chart-x-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 50px;
+  font-size: 0.75rem;
+  color: #777;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.chart-x-labels span {
+  text-align: center;
+  transform: rotate(-45deg);
+  transform-origin: top left;
+  display: inline-block;
+  width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 16px;
+  height: 3px;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-container {
+    padding: 1.5rem;
+  }
+  
+  .dashboard-header {
+    padding-top: 3rem;
+  }
+  
+  .chart-x-labels span {
+    font-size: 0.7rem;
+    width: 60px;
+  }
+  
+  .chart-legend {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+/* Prevent horizontal scrolling for SVG content */
+svg {
+  max-width: 100%;
+} 

@@ -19,21 +19,31 @@ export const usePlaidLink = (userId?: string) => {
   const [isRemoving, setIsRemoving] = useState(false);
 
   // Fetch existing linked accounts
-  const fetchAccounts = useCallback(async () => {
+  const fetchAccounts = useCallback(async (skipLoadingState = false) => {
     if (!userId) return;
     
     try {
-      setIsLoading(true);
+      if (!skipLoadingState) {
+        setIsLoading(true);
+      }
       const data = await plaidService.getAccounts(userId);
-      setAccounts(data.accounts);
+      
+      // Only update the accounts state if we're not skipping the loading state
+      // or if the accounts list is currently empty
+      if (!skipLoadingState || accounts.length === 0) {
+        setAccounts(data.accounts);
+      }
+      
       return data.accounts;
     } catch (error) {
       console.error('Error fetching accounts:', error);
       return [];
     } finally {
-      setIsLoading(false);
+      if (!skipLoadingState) {
+        setIsLoading(false);
+      }
     }
-  }, [userId]);
+  }, [userId, accounts.length]);
 
   // Get a link token from the server
   const getLinkToken = useCallback(async () => {
@@ -48,8 +58,14 @@ export const usePlaidLink = (userId?: string) => {
   }, [userId]);
 
   // Handle opening Plaid Link
-  const openPlaidLink = useCallback((onSuccess?: () => void) => {
+  const openPlaidLink = useCallback((onSuccess?: (isRefreshing: boolean) => void, onCancel?: () => void) => {
     if (!linkToken || !userId) return;
+    
+    // Remove any existing Plaid Link scripts to ensure fresh instance
+    const existingScripts = document.querySelectorAll('script[src*="plaid.com/link"]');
+    existingScripts.forEach(script => {
+      document.body.removeChild(script);
+    });
     
     // Load Plaid Link script dynamically
     const script = document.createElement('script');
@@ -62,19 +78,46 @@ export const usePlaidLink = (userId?: string) => {
         onSuccess: async (public_token: string) => {
           // Exchange public token for access token on the server
           try {
-            await plaidService.exchangeToken(public_token, userId);
-            // Refresh accounts list
-            await fetchAccounts();
-            // Call success callback if provided
+            // Signal refreshing start
             if (onSuccess) {
-              onSuccess();
+              onSuccess(true);
+            }
+            
+            // First exchange the token
+            await plaidService.exchangeToken(public_token, userId);
+            
+            // Then get a fresh link token
+            await getLinkToken();
+            
+            // Fetch the updated accounts but don't update state yet
+            const updatedAccounts = await plaidService.getAccounts(userId);
+            
+            // Now update the accounts state all at once after all operations
+            setAccounts(updatedAccounts.accounts);
+            
+            // Signal refresh complete
+            if (onSuccess) {
+              onSuccess(false);
             }
           } catch (error) {
             console.error('Error exchanging token:', error);
+            if (onSuccess) {
+              onSuccess(false);
+            }
           }
         },
         onExit: (err: any) => {
           if (err) console.error('Plaid Link error:', err);
+          // Remove the script after exit to ensure clean state for next time
+          if (document.body.contains(script)) {
+            document.body.removeChild(script);
+          }
+          
+          // Call cancel callback if provided and there was no success
+          // (onExit is called even after successful linking)
+          if (onCancel && !err?.success) {
+            onCancel();
+          }
         },
       });
       
@@ -89,7 +132,7 @@ export const usePlaidLink = (userId?: string) => {
         document.body.removeChild(script);
       }
     };
-  }, [linkToken, userId, fetchAccounts]);
+  }, [linkToken, userId, fetchAccounts, getLinkToken]);
 
   // Function to remove an account
   const removeAccount = useCallback(async (accountId: string) => {
@@ -115,8 +158,16 @@ export const usePlaidLink = (userId?: string) => {
   // Initialize on mount
   useEffect(() => {
     if (userId) {
-      getLinkToken();
-      fetchAccounts();
+      // First set loading state
+      setIsLoading(true);
+      
+      // Get link token and fetch accounts in parallel
+      Promise.all([
+        getLinkToken(),
+        fetchAccounts(true) // Skip additional loading state change
+      ]).finally(() => {
+        setIsLoading(false);
+      });
     }
   }, [userId, getLinkToken, fetchAccounts]);
 
