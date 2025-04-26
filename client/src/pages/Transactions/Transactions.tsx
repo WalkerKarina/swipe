@@ -96,7 +96,14 @@ const Transactions: React.FC = () => {
       <p>View and analyze your recent financial activity</p>
       
       {isLoading ? (
-        <div className="loading-spinner">Loading transactions...</div>
+        <div className="loading-container">
+          <div className="loading-spinner-wrapper">
+            <div className="spinner-only"></div>
+          </div>
+          <div className="loading-text-wrapper">
+            <p>Loading transactions...</p>
+          </div>
+        </div>
       ) : !hasLinkedAccounts ? (
         <div className="no-accounts-message">
           <p>You don't have any linked bank accounts yet.</p>

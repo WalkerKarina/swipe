@@ -128,13 +128,8 @@ const Dashboard: React.FC = () => {
   const topCategory = getTopCategory();
   const topCard = getTopCard();
   
-  if (loading) {
-    return <div className="dashboard-loading">Loading dashboard data...</div>;
-  }
-  
   return (
     <div className="dashboard-container">
-      
       <div className="dashboard-header">
         <div className="header-content">
           <h1>Dashboard</h1>
@@ -142,102 +137,115 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      <div className="dashboard-grid">
-        {/* Total Rewards Card */}
-        <div className="dashboard-card total-rewards">
-          <div className="card-header">
-            <h2>TOTAL REWARDS</h2>
-            <p className="period">THIS MONTH</p>
-            <div className="gift-icon">
-              <i className="fas fa-gift"></i>
-            </div>
+      {loading ? (
+        <div className="loading-container">
+          <div className="loading-spinner-wrapper">
+            <div className="spinner-only"></div>
           </div>
-          <div className="card-content">
-            <h3 className="amount">${(cashbackSummary?.monthly_cash_back || 0).toFixed(2)}</h3>
+          <div className="loading-text-wrapper">
+            <p>Loading dashboard data...</p>
           </div>
         </div>
-        
-        {/* Top Card */}
-        <div className="dashboard-card top-card">
-          <div className="card-header">
-            <h2>BEST PERFORMING CARD</h2>
-            <p className="period">THIS MONTH</p>
-            <div className="card-icon">
-              <i className="fas fa-credit-card"></i>
+      ) : (
+        <>
+          <div className="dashboard-grid">
+            {/* Total Rewards Card */}
+            <div className="dashboard-card total-rewards">
+              <div className="card-header">
+                <h2>TOTAL REWARDS</h2>
+                <p className="period">THIS MONTH</p>
+                <div className="gift-icon">
+                  <i className="fas fa-gift"></i>
+                </div>
+              </div>
+              <div className="card-content">
+                <h3 className="amount">${(cashbackSummary?.monthly_cash_back || 0).toFixed(2)}</h3>
+              </div>
             </div>
-          </div>
-          <div className="card-content">
-            <h3 className="card-name">{topCard.card || 'No Card Data'}</h3>
-            <p className="card-rewards">${(topCard.amount || 0).toFixed(2)} in rewards</p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Rewards Trend Chart */}
-      <div className="rewards-chart-container">
-        <h2>Rewards by Card Over Time</h2>
-        <div className="rewards-chart">
-          <div className="chart-area">
-            {/* Simplified chart visualization */}
-            <svg width="100%" height="300" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet">
-              {/* X-axis (months) */}
-              <line x1="50" y1="250" x2="1150" y2="250" stroke="#ddd" strokeWidth="1" />
-              
-              {/* Chase line */}
-              <path d="M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150" 
-                    fill="none" stroke="#ACE5DE" strokeWidth="3" />
-              
-              {/* AMEX line */}
-              <path d="M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200" 
-                    fill="none" stroke="#2777E7" strokeWidth="3" />
-              
-              {/* Bank of America line */}
-              <path d="M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180" 
-                    fill="none" stroke="#9DE88C" strokeWidth="3" />
-              
-              {/* Discover line */}
-              <path d="M50,180 Q200,150 350,100 T650,200 T950,100 T1150,120" 
-                    fill="none" stroke="#388E3C" strokeWidth="3" />
-            </svg>
             
-            {/* X-axis labels */}
-            <div className="chart-x-labels">
-              <span>January</span>
-              <span>February</span>
-              <span>March</span>
-              <span>April</span>
-              <span>May</span>
-              <span>June</span>
-              <span>July</span>
-              <span>August</span>
-              <span>September</span>
-              <span>October</span>
-              <span>November</span>
-              <span>December</span>
+            {/* Top Card */}
+            <div className="dashboard-card top-card">
+              <div className="card-header">
+                <h2>BEST PERFORMING CARD</h2>
+                <p className="period">THIS MONTH</p>
+                <div className="card-icon">
+                  <i className="fas fa-credit-card"></i>
+                </div>
+              </div>
+              <div className="card-content">
+                <h3 className="card-name">{topCard.card || 'No Card Data'}</h3>
+                <p className="card-rewards">${(topCard.amount || 0).toFixed(2)} in rewards</p>
+              </div>
             </div>
           </div>
           
-          {/* Chart legend */}
-          <div className="chart-legend">
-            <div className="legend-item">
-              <span className="legend-color" style={{ backgroundColor: '#ACE5DE' }}></span>
-              <span>Chase</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color" style={{ backgroundColor: '#2777E7' }}></span>
-              <span>AMEX</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color" style={{ backgroundColor: '#9DE88C' }}></span>
-              <span>Bank of America</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color" style={{ backgroundColor: '#388E3C' }}></span>
-              <span>Discover</span>
+          {/* Rewards Trend Chart */}
+          <div className="rewards-chart-container">
+            <h2>Rewards by Card Over Time</h2>
+            <div className="rewards-chart">
+              <div className="chart-area">
+                {/* Simplified chart visualization */}
+                <svg width="100%" height="300" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet">
+                  {/* X-axis (months) */}
+                  <line x1="50" y1="250" x2="1150" y2="250" stroke="#ddd" strokeWidth="1" />
+                  
+                  {/* Chase line */}
+                  <path d="M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150" 
+                        fill="none" stroke="#ACE5DE" strokeWidth="3" />
+                  
+                  {/* AMEX line */}
+                  <path d="M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200" 
+                        fill="none" stroke="#2777E7" strokeWidth="3" />
+                  
+                  {/* Bank of America line */}
+                  <path d="M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180" 
+                        fill="none" stroke="#9DE88C" strokeWidth="3" />
+                  
+                  {/* Discover line */}
+                  <path d="M50,180 Q200,150 350,100 T650,200 T950,100 T1150,120" 
+                        fill="none" stroke="#388E3C" strokeWidth="3" />
+                </svg>
+                
+                {/* X-axis labels */}
+                <div className="chart-x-labels">
+                  <span>January</span>
+                  <span>February</span>
+                  <span>March</span>
+                  <span>April</span>
+                  <span>May</span>
+                  <span>June</span>
+                  <span>July</span>
+                  <span>August</span>
+                  <span>September</span>
+                  <span>October</span>
+                  <span>November</span>
+                  <span>December</span>
+                </div>
+              </div>
+              
+              {/* Chart legend */}
+              <div className="chart-legend">
+                <div className="legend-item">
+                  <span className="legend-color" style={{ backgroundColor: '#ACE5DE' }}></span>
+                  <span>Chase</span>
+                </div>
+                <div className="legend-item">
+                  <span className="legend-color" style={{ backgroundColor: '#2777E7' }}></span>
+                  <span>AMEX</span>
+                </div>
+                <div className="legend-item">
+                  <span className="legend-color" style={{ backgroundColor: '#9DE88C' }}></span>
+                  <span>Bank of America</span>
+                </div>
+                <div className="legend-item">
+                  <span className="legend-color" style={{ backgroundColor: '#388E3C' }}></span>
+                  <span>Discover</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
