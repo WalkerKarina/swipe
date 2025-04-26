@@ -1281,6 +1281,25 @@ def get_optimal_cashback(user_id=None):
 def chat_completions():
     """
     Endpoint to create a chat completion with OpenAI
+    Returns in this format:
+    {
+        "card_type": "chase sapphire preffered",
+        "extra_info": {
+            "annual_fee": "$95",
+            "card_name": "Chase Sapphire Preferred",
+            "notes": "Points are worth 25% more when redeemed for travel through Chase Ultimate Rewards.",
+            "signup_bonus": "Earn 60,000 bonus points after you spend $4,000 on purchases in the first 3 months from account opening."
+        },
+        "raw_content": "```python\n{\n    'card_name': 'Chase Sapphire Preferred',\n    'reward_categories': [\n        '5x points on travel purchased through Chase Ultimate Rewards',\n        '3x points on dining',\n        '3x points on online grocery purchases (excluding Target, Walmart, and wholesale clubs)',\n        '3x points on select streaming services',\n        '2x points on all other travel purchases',\n        '1x point on all other purchases'\n    ],\n    'signup_bonus': 'Earn 60,000 bonus points after you spend $4,000 on purchases in the first 3 months from account opening.',\n    'annual_fee': '$95',\n    'notes': 'Points are worth 25% more when redeemed for travel through Chase Ultimate Rewards.'\n}\n```",
+        "reward_categories": [
+            "5x points on travel purchased through Chase Ultimate Rewards",
+            "3x points on dining",
+            "3x points on online grocery purchases (excluding Target, Walmart, and wholesale clubs)",
+            "3x points on select streaming services",
+            "2x points on all other travel purchases",
+            "1x point on all other purchases"
+        ]
+    }
     """
 
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
