@@ -3,7 +3,9 @@
   padding: 2rem 2.5rem;
   position: relative;
   min-height: 100vh;
-  background-color: #f7f7f7;
+  background-color: transparent;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .dashboard-loading {
@@ -19,7 +21,7 @@
   display: flex;
   align-items: flex-start;
   margin-bottom: 2.5rem;
-  padding-top: 2rem;
+  padding-top: 3.5rem;
 }
 
 .header-content {
@@ -43,6 +45,9 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin-top: 1rem;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .dashboard-card {
@@ -52,6 +57,12 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
   position: relative;
   border: 1px solid #f0f0f0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+  width: 100%;
 }
 
 .card-header {
@@ -96,6 +107,8 @@
 
 .card-content {
   position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
 .amount {
@@ -213,6 +226,10 @@
   padding: 1.5rem;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .rewards-chart-container h2 {
@@ -224,11 +241,14 @@
 
 .rewards-chart {
   position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
 .chart-area {
   position: relative;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
 
 .chart-x-labels {
@@ -238,6 +258,7 @@
   font-size: 0.75rem;
   color: #777;
   margin-top: 0.5rem;
+  overflow: hidden;
 }
 
 .chart-x-labels span {
@@ -272,6 +293,13 @@
   margin-right: 0.5rem;
 }
 
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
@@ -282,7 +310,7 @@
   }
   
   .dashboard-header {
-    padding-top: 1rem;
+    padding-top: 3rem;
   }
   
   .chart-x-labels span {
@@ -294,4 +322,9 @@
     flex-wrap: wrap;
     gap: 1rem;
   }
+}
+
+/* Prevent horizontal scrolling for SVG content */
+svg {
+  max-width: 100%;
 } 

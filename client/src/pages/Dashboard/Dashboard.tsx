@@ -224,7 +224,7 @@ const Dashboard: React.FC = () => {
         <div className="rewards-chart">
           <div className="chart-area">
             {/* Simplified chart visualization */}
-            <svg width="100%" height="300" viewBox="0 0 1200 300" preserveAspectRatio="none">
+            <svg width="100%" height="300" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet">
               {/* X-axis (months) */}
               <line x1="50" y1="250" x2="1150" y2="250" stroke="#ddd" strokeWidth="1" />
               

@@ -4,6 +4,8 @@
   min-height: 100vh;
   background-color: #fff;
   display: flex;
+  position: relative;
+  overflow-x: hidden;
 }
 
 /* Left sidebar navigation */
@@ -149,6 +151,8 @@
   margin-left: 240px;
   padding: 2rem;
   width: calc(100% - 240px);
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* User info in top-right corner */
@@ -401,6 +405,7 @@
     margin-left: 64px;
     width: calc(100% - 64px);
     padding: 1rem;
+    overflow-x: hidden;
   }
   
   .user-info {
