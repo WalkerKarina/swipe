@@ -1276,3 +1276,86 @@ def get_optimal_cashback(user_id=None):
             'error': 'server_error',
             'message': str(e)
         }), 500
+
+# TODO: really this should not be here, but its here for now
+@plaid_bp.route('/chat/completions', methods=['POST'])
+def chat_completions():
+    """
+    Endpoint to create a chat completion with OpenAI
+    """
+
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    if not OPENAI_API_KEY:
+        raise ValueError("OpenAI API key must be set in environment variables")
+    try:
+        logger.info("Received chat completion request")
+        
+        # Get request data
+        data = request.json
+        if not data:
+            logger.warning("No JSON data provided in request")
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        # Validate required fields
+        if not data.get('card_type'):
+            logger.warning("Missing required field: card_type")
+            return jsonify({'error': 'card_type is required'}), 400
+        
+        card_type = data['card_type']
+        logger.info(f"OpenAI:Processing request for card type: {card_type}")
+        
+        # Prepare request to OpenAI
+        headers = {
+            'Authorization': f'Bearer {OPENAI_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Set defaults if not provided
+        payload = {
+            'model': "gpt-4o",
+            'messages': [
+            {
+                "role": "system",
+                "content": "You are an expert on U.S. credit card rewards programs. Your answers should be clear, concise, and updated based on the most recent information."
+                },
+                {
+                "role": "user",
+                "content": f"What are the current reward categories and signup bonuses for the {card_type} card?"
+                }
+            ],
+            'temperature': data.get('temperature', 0.7),
+            'max_tokens': data.get('max_tokens', 500),
+        }
+        
+        logger.debug(f"Sending request to OpenAI API with payload: {json.dumps(payload, indent=2)}")
+        
+        # Make request to OpenAI
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers,
+            json=payload
+        )
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            error_message = f"OpenAI API request failed with status {response.status_code}"
+            try:
+                error_data = response.json()
+                error_message += f": {json.dumps(error_data)}"
+                logger.error(f"OpenAI API error: {error_message}")
+            except:
+                error_message += f": {response.text}"
+                logger.error(f"OpenAI API error: {error_message}")
+            return jsonify({'error': error_message}), response.status_code
+        
+        logger.info("Successfully received response from OpenAI API")
+        logger.debug(f"OpenAI response: {json.dumps(response.json(), indent=2)}")
+            
+        # Return response from OpenAI
+        return jsonify(response.json())
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc() 
+        logger.exception(f"Error in chat_completions: {str(e)}")
+        return jsonify({'error': str(e), 'traceback': error_detail}), 500
+
