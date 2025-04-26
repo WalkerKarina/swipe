@@ -42,24 +42,22 @@ const LinkAccounts: React.FC = () => {
   };
 
   // Handle link success - refresh accounts but don't navigate automatically
-  const handleLinkSuccess = async () => {
-    // Show refreshing state
-    setIsRefreshing(true);
-    
-    try {
-      // Manually refresh accounts to see the newly linked account
-      await fetchAccounts();
-      console.log("Accounts refreshed after linking:", accounts);
-    } catch (error) {
-      console.error("Error refreshing accounts:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
+  const handleLinkSuccess = async (isRefreshing: boolean) => {
+    // Set the refreshing state based on the parameter
+    setIsRefreshing(isRefreshing);
+    console.log(`Link success: ${isRefreshing ? "Starting refresh" : "Refresh completed"}`);
+  };
+  
+  // Handle cancellation of the Plaid Link flow
+  const handleLinkCancel = () => {
+    setIsRefreshing(false);
+    console.log("Link cancelled");
   };
 
   // Handle opening Plaid Link with success callback
   const handleOpenPlaidLink = () => {
-    openPlaidLink(handleLinkSuccess);
+    // Only set refreshing state on success, not on open
+    openPlaidLink(handleLinkSuccess, handleLinkCancel);
   };
 
   return (
@@ -79,7 +77,7 @@ const LinkAccounts: React.FC = () => {
               <button 
                 onClick={handleOpenPlaidLink} 
                 className="link-new-account-button"
-                disabled={!linkToken || isRemoving}
+                disabled={!linkToken || isRemoving || isRefreshing}
               >
                 Link New Account
               </button>
@@ -103,14 +101,14 @@ const LinkAccounts: React.FC = () => {
               <button 
                 onClick={handleOpenPlaidLink} 
                 className="link-new-account-button"
-                disabled={!linkToken || isRemoving}
+                disabled={!linkToken || isRemoving || isRefreshing}
               >
                 Link New Account
               </button>
               
               {isLoading || isRefreshing ? (
                 <div className="loading">
-                  {isRefreshing ? "Refreshing accounts..." : "Loading accounts..."}
+                  {isRefreshing ? "Adding new account..." : "Loading accounts..."}
                 </div>
               ) : (
                 <div className="accounts-list">
@@ -135,6 +133,7 @@ const LinkAccounts: React.FC = () => {
               <button 
                 onClick={handleContinue}
                 className="continue-button"
+                disabled={isRefreshing}
               >
                 Continue to Rewards
               </button>
