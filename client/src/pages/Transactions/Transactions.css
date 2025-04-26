@@ -145,14 +145,37 @@
   color: white;
   font-weight: 600;
   border-radius: 12px 12px 0 0;
-  font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: grid;
+  align-items: center;
+  height: 60px;
+  padding: 0 20px;
+}
+
+.transaction-header span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  line-height: 1.2;
+  color: white;
+  text-transform: uppercase;
+  padding: 0;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.transaction-header .amount {
+  justify-content: flex-end;
+  font-size: 0.95rem;
 }
 
 .transaction-item {
+  padding: 16px 20px;
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
+  min-height: 60px;
 }
 
 .transaction-item:hover {
@@ -163,28 +186,36 @@
   border-bottom: none;
 }
 
+.transaction-item span {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.transaction-item .amount {
+  justify-content: flex-end;
+}
+
 .date {
   color: #666;
-  font-size: 0.95rem;
 }
 
 .merchant {
   font-weight: 500;
   color: #333;
-  font-size: 0.95rem;
 }
 
 .category {
-  color: #5CAEA2;
-  font-size: 0.9rem;
-  text-transform: capitalize;
   font-weight: 500;
+}
+
+.transaction-item .category {
+  color: #5CAEA2;
+  text-transform: capitalize;
 }
 
 .amount {
   font-weight: 600;
-  text-align: right;
-  font-size: 0.95rem;
 }
 
 .positive {
@@ -196,7 +227,6 @@
 }
 
 .account {
-  font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -239,13 +269,18 @@
 @media (max-width: 768px) {
   .transaction-header,
   .transaction-item {
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 0.8fr 1.2fr 1fr 1fr;
     padding: 12px 16px;
     gap: 8px;
   }
   
-  .category, .account {
+  .account {
     display: none;
+  }
+  
+  /* Keep category visible in mobile view */
+  .category {
+    display: block;
   }
   
   .transactions-page {
@@ -265,4 +300,37 @@
   .category-filter {
     width: 100%;
   }
+}
+
+/* Make the transaction header uniform */
+.transaction-header .amount,
+.transaction-header .date,
+.transaction-header .merchant,
+.transaction-header .category,
+.transaction-header .account {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Make all transaction item text uniform */
+.transaction-item .amount,
+.transaction-item .date,
+.transaction-item .merchant,
+.transaction-item .category {
+  font-size: 0.95rem;
+}
+
+/* Make category text in row items teal to match the theme, but not in the header */
+.transaction-item .category {
+  color: #5CAEA2;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+/* Make transaction item text uniform - font size */
+.transaction-item span {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
 } 
