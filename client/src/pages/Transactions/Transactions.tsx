@@ -106,7 +106,8 @@ const Transactions: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [accountFilter, setAccountFilter] = useState('all');
   const [hasLinkedAccounts, setHasLinkedAccounts] = useState(true);
   const [cashbackData, setCashbackData] = useState<CashbackData | null>(null);
   const [cardNameToIndexMap, setCardNameToIndexMap] = useState<Record<string, number>>({});
@@ -218,13 +219,33 @@ const Transactions: React.FC = () => {
     return formattedCategory.charAt(0).toUpperCase() + formattedCategory.slice(1);
   };
 
-  // Filter transactions based on selected category
-  const filteredTransactions = filter === 'all' 
-    ? transactions 
-    : transactions.filter(transaction => formatCategory(transaction.category) === filter);
+  // Filter transactions based on selected filters
+  const filteredTransactions = transactions.filter(transaction => {
+    // Filter by category
+    const passesCategory = categoryFilter === 'all' || 
+      formatCategory(transaction.category) === categoryFilter;
+    
+    // Filter by account
+    const passesAccount = accountFilter === 'all' || 
+      (transaction.account_name && 
+       (transaction.account_name === accountFilter || 
+        (transaction.institution_name && 
+         `${transaction.account_name} (${transaction.institution_name})` === accountFilter)));
+    
+    // Transaction must pass both filters
+    return passesCategory && passesAccount;
+  });
 
   // Get unique categories from transactions
   const categories = ['all', ...Array.from(new Set(transactions.map(t => formatCategory(t.category))))];
+  
+  // Get unique accounts from transactions
+  const accounts = ['all', ...Array.from(new Set(transactions
+    .filter(t => t.account_name)
+    .map(t => t.institution_name 
+      ? `${t.account_name} (${t.institution_name})` 
+      : t.account_name || ''
+    )))];
 
   // Format currency amount
   const formatCurrency = (amount: number) => {
@@ -262,19 +283,37 @@ const Transactions: React.FC = () => {
       ) : (
         <>
           <div className="filters">
-            <label htmlFor="category-filter">Filter by category:</label>
-            <select 
-              id="category-filter" 
-              value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
-              className="category-filter"
-            >
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category === 'all' ? 'All' : displayCategory(category)}
-                </option>
-              ))}
-            </select>
+            <div className="filter-group">
+              <label htmlFor="category-filter">Filter by category:</label>
+              <select 
+                id="category-filter" 
+                value={categoryFilter} 
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="filter-select"
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category === 'all' ? 'All' : displayCategory(category)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label htmlFor="account-filter">Filter by account:</label>
+              <select 
+                id="account-filter" 
+                value={accountFilter} 
+                onChange={(e) => setAccountFilter(e.target.value)}
+                className="filter-select"
+              >
+                {accounts.map(account => (
+                  <option key={account} value={account}>
+                    {account === 'all' ? 'All' : account}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           
           {filteredTransactions.length === 0 ? (
