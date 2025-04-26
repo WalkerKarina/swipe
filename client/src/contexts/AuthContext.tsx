@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService, ProfileUpdateData } from '../services/api';
 
 interface User {
   id: string;
   email: string;
   name: string;
+  photoUrl?: string;
 }
 
 interface AuthContextType {
@@ -12,6 +14,8 @@ interface AuthContextType {
   loading: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUserProfile: (data: ProfileUpdateData) => Promise<void>;
+  updateUserPhoto: (photoFile: File) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,8 +68,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
   };
 
+  const updateUserProfile = async (data: ProfileUpdateData) => {
+    if (!user) return;
+    
+    try {
+      const updatedUser = await authService.updateProfile(user.id, data);
+      
+      // Update local state and localStorage
+      const newUserData = { ...user, ...data };
+      setUser(newUserData);
+      localStorage.setItem('user', JSON.stringify(newUserData));
+      
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
+  const updateUserPhoto = async (photoFile: File) => {
+    if (!user) return;
+    
+    try {
+      const response = await authService.uploadProfilePhoto(user.id, photoFile);
+      
+      // Update user with new photo URL
+      const newUserData = { ...user, photoUrl: response.photoUrl };
+      setUser(newUserData);
+      localStorage.setItem('user', JSON.stringify(newUserData));
+      
+      return response;
+    } catch (error) {
+      console.error('Error uploading profile photo:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      loading, 
+      login, 
+      logout,
+      updateUserProfile,
+      updateUserPhoto
+    }}>
       {children}
     </AuthContext.Provider>
   );
