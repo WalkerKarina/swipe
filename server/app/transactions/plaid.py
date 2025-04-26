@@ -1276,3 +1276,358 @@ def get_optimal_cashback(user_id=None):
             'error': 'server_error',
             'message': str(e)
         }), 500
+
+@plaid_bp.route('/chat/completions', methods=['POST'])
+def chat_completions():
+    """
+    Endpoint to create a chat completion with OpenAI
+    Returns in this format:
+    {
+        "card_type": "chase sapphire preffered",
+        "extra_info": {
+            "annual_fee": "$95",
+            "card_name": "Chase Sapphire Preferred",
+            "notes": "Points are worth 25% more when redeemed for travel through Chase Ultimate Rewards.",
+            "signup_bonus": "Earn 60,000 bonus points after you spend $4,000 on purchases in the first 3 months from account opening."
+        },
+        "raw_content": "```python\n{\n    'card_name': 'Chase Sapphire Preferred',\n    'reward_categories': [\n        '5x points on travel purchased through Chase Ultimate Rewards',\n        '3x points on dining',\n        '3x points on online grocery purchases (excluding Target, Walmart, and wholesale clubs)',\n        '3x points on select streaming services',\n        '2x points on all other travel purchases',\n        '1x point on all other purchases'\n    ],\n    'signup_bonus': 'Earn 60,000 bonus points after you spend $4,000 on purchases in the first 3 months from account opening.',\n    'annual_fee': '$95',\n    'notes': 'Points are worth 25% more when redeemed for travel through Chase Ultimate Rewards.'\n}\n```",
+        "reward_categories": [
+            "5x points on travel purchased through Chase Ultimate Rewards",
+            "3x points on dining",
+            "3x points on online grocery purchases (excluding Target, Walmart, and wholesale clubs)",
+            "3x points on select streaming services",
+            "2x points on all other travel purchases",
+            "1x point on all other purchases"
+        ]
+    }
+    """
+
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    if not OPENAI_API_KEY:
+        raise ValueError("OpenAI API key must be set in environment variables")
+    try:
+        logger.info("Received chat completion request")
+        
+        # Get request data
+        data = request.json
+        if not data:
+            logger.warning("No JSON data provided in request")
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        # Validate required fields
+        if not data.get('card_type'):
+            logger.warning("Missing required field: card_type")
+            return jsonify({'error': 'card_type is required'}), 400
+        
+        card_type = data['card_type']
+        logger.info(f"OpenAI: Processing request for card type: {card_type}")
+        
+        # Prepare request to OpenAI
+        headers = {
+            'Authorization': f'Bearer {OPENAI_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Set defaults if not provided
+        payload = {
+            'model': "gpt-4o",
+            'messages': [
+            {
+                "role": "system",
+                "content":  "You are an expert on U.S. credit card rewards programs. "
+            "Always provide information based on the most recent known details (as of 2024). "
+            "When answering, always format your response as a valid Python dictionary with these keys:\n\n"
+            "- 'card_name': (string) the name of the card\n"
+            "- 'reward_categories': (list of strings) major categories and their points/cashback rates\n"
+            "- 'signup_bonus': (string) description of the current signup bonus\n"
+            "- 'annual_fee': (string) the annual fee information\n"
+            "- 'notes': (string) any other important information\n\n"
+            "Respond ONLY with the dictionary, no extra text or explanations."
+                },
+                {
+                "role": "user",
+                "content": f"What are the current reward categories and signup bonuses for the {card_type} card?"
+                }
+            ],
+            'temperature': data.get('temperature', 0.7),
+            'max_tokens': data.get('max_tokens', 500),
+        }
+        
+        logger.debug(f"Sending request to OpenAI API with payload: {json.dumps(payload, indent=2)}")
+        
+        # Make request to OpenAI
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers,
+            json=payload
+        )
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            error_message = f"OpenAI API request failed with status {response.status_code}"
+            try:
+                error_data = response.json()
+                error_message += f": {json.dumps(error_data)}"
+                logger.error(f"OpenAI API error: {error_message}")
+            except:
+                error_message += f": {response.text}"
+                logger.error(f"OpenAI API error: {error_message}")
+            return jsonify({'error': error_message}), response.status_code
+        
+        logger.info("Successfully received response from OpenAI API")
+        
+        # Parse the response to extract structured data
+        try:
+            response_json = response.json()
+            
+            # Log the full response for debugging
+            logger.debug(f"OpenAI chat completion full response: {json.dumps(response_json, indent=2)}")
+            
+            # Use the parser to extract structured data
+            parsed_data = chat_output_parser(response_json)
+            
+            # Get the original content text for reference
+            content_text = ""
+            if 'choices' in response_json and len(response_json['choices']) > 0:
+                message = response_json['choices'][0].get('message', {})
+                content_text = message.get('content', '')
+            
+            # Return structured response
+            return jsonify({
+                'card_type': card_type,
+                'reward_categories': parsed_data.reward_categories,
+                'extra_info': parsed_data.extra_info,
+                'raw_content': content_text  # Include raw content for debugging if needed
+            })
+            
+        except Exception as parse_error:
+            logger.exception(f"Error parsing OpenAI response: {str(parse_error)}")
+            # Return a more user-friendly error with the raw response
+            return jsonify({
+                'error': 'Failed to parse card information',
+                'message': str(parse_error),
+                'card_type': card_type,
+                'reward_categories': [],
+                'extra_info': {
+                    'card_name': card_type,
+                    'signup_bonus': '',
+                    'annual_fee': '',
+                    'notes': 'Error parsing card information'
+                },
+                'raw_response': response.json() if response.text else {}
+            }), 500
+            
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc() 
+        logger.exception(f"Error in chat_completions: {str(e)}")
+        return jsonify({
+            'error': str(e), 
+            'traceback': error_detail,
+            'card_type': data.get('card_type', 'unknown'),
+            'reward_categories': [],
+            'extra_info': {
+                'card_name': data.get('card_type', 'unknown'),
+                'signup_bonus': '',
+                'annual_fee': '',
+                'notes': 'Error processing request'
+            }
+        }), 500
+
+@plaid_bp.route('/chat/websearch', methods=['POST'])
+def chat_web_search():
+    """
+    Endpoint to create a chat completion with OpenAI using web search capabilities
+    """
+
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    if not OPENAI_API_KEY:
+        raise ValueError("OpenAI API key must be set in environment variables")
+    try:
+        logger.info("Received web search request")
+        
+        # Get request data
+        data = request.json
+        if not data:
+            logger.warning("No JSON data provided in web search request")
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        # Validate required fields
+        if not data.get('card_type'):
+            logger.warning("Missing required field: card_type for web search")
+            return jsonify({'error': 'card_type is required'}), 400
+        
+        card_type = data['card_type']
+        logger.info(f"Processing web search request for card type: {card_type}")
+        
+        # Prepare request to OpenAI
+        headers = {
+            'Authorization': f'Bearer {OPENAI_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Set defaults if not provided
+        payload = {
+            'model': "gpt-4o",
+            "tools": [{"type": "web_search_preview"}],
+            "input": f"What are the current reward categories and deals for the {card_type} card?",
+            'max_output_tokens': data.get('max_output_tokens', 500),
+            'temperature': data.get('temperature', 0.7),
+        }
+        
+        logger.debug(f"Sending web search request to OpenAI with payload: {json.dumps(payload, indent=2)}")
+        
+        # Make request to OpenAI
+        response = requests.post(
+            'https://api.openai.com/v1/responses',
+            headers=headers,
+            json=payload
+        )
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            error_message = f"OpenAI web search API request failed with status {response.status_code}"
+            try:
+                error_data = response.json()
+                error_message += f": {json.dumps(error_data)}"
+                logger.error(f"OpenAI web search API error: {error_message}")
+            except:
+                error_message += f": {response.text}"
+                logger.error(f"OpenAI web search API error: {error_message}")
+            return jsonify({'error': error_message}), response.status_code
+        
+        logger.info(f"Successfully received web search response from OpenAI for card type: {card_type}")
+        
+        # Parse the response to extract just the text content
+        try:
+            response_json = response.json()
+            
+            # Log the full response for debugging
+            logger.debug(f"OpenAI web search full response: {json.dumps(response_json, indent=2)}")
+            
+            # Extract only the text from the response
+            extracted_text = ""
+            
+            if 'output' in response_json:
+                for output_item in response_json['output']:
+                    if output_item.get('type') == 'message' and 'content' in output_item:
+                        for content_item in output_item['content']:
+                            if content_item.get('type') == 'output_text':
+                                extracted_text = content_item.get('text', '')
+                                break
+            
+            logger.debug(f"Extracted text: {extracted_text}")
+            
+            # Return only the extracted text in a simplified response
+            return jsonify({
+                'text': extracted_text,
+                'card_type': card_type
+            })
+            
+        except Exception as parse_error:
+            logger.exception(f"Error parsing OpenAI response: {str(parse_error)}")
+            # If we can't parse properly, return the full response
+            return jsonify(response.json())
+            
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc() 
+        logger.exception(f"Error in chat_web_search: {str(e)}")
+        return jsonify({'error': str(e), 'traceback': error_detail}), 500
+
+def chat_output_parser(response):
+    """
+    Parse the output of a chat completion with OpenAI.
+    Extracts the structured card information from the response and returns it in a usable format.
+    
+    Args:
+        response (dict): The full response from OpenAI API
+        
+    Returns:
+        An object with structured card data including reward_categories and extra_info
+    """
+    from collections import namedtuple
+    
+    # Define a simple data structure for returning the parsed result
+    CardInfo = namedtuple('CardInfo', ['reward_categories', 'extra_info'])
+    
+    try:
+        # Extract the content from the response
+        content = ""
+        if 'choices' in response and len(response['choices']) > 0:
+            message = response['choices'][0].get('message', {})
+            content = message.get('content', '')
+        
+        # Default values in case parsing fails
+        reward_categories = []
+        extra_info = {
+            'card_name': '',
+            'signup_bonus': '',
+            'annual_fee': '',
+            'notes': ''
+        }
+        
+        # Check if content is not empty
+        if content:
+            # Extract the Python dictionary string from the content
+            # It's usually wrapped in ```python and ``` markers
+            if '```python' in content and '```' in content.split('```python', 1)[1]:
+                dict_str = content.split('```python', 1)[1].split('```', 1)[0].strip()
+            elif '```' in content and '```' in content.split('```', 1)[1]:
+                # Handle case where it's just wrapped in ``` without language specification
+                dict_str = content.split('```', 1)[1].split('```', 1)[0].strip()
+            else:
+                # If no code blocks, use the entire content
+                dict_str = content.strip()
+            
+            # Clean up the dictionary string (replace single quotes with double quotes for JSON parsing)
+            # Also handle potential issues with trailing commas
+            dict_str = dict_str.replace("'", '"').replace(',\n}', '\n}')
+            
+            # Try multiple approaches to parse the dictionary
+            try:
+                # First try direct eval (safer than using eval)
+                import ast
+                card_data = ast.literal_eval(content)
+                
+                # Extract the data
+                reward_categories = card_data.get('reward_categories', [])
+                extra_info = {
+                    'card_name': card_data.get('card_name', ''),
+                    'signup_bonus': card_data.get('signup_bonus', ''),
+                    'annual_fee': card_data.get('annual_fee', ''),
+                    'notes': card_data.get('notes', '')
+                }
+            except:
+                try:
+                    # Try JSON parsing with the cleaned string
+                    import json
+                    card_data = json.loads(dict_str)
+                    
+                    # Extract the data
+                    reward_categories = card_data.get('reward_categories', [])
+                    extra_info = {
+                        'card_name': card_data.get('card_name', ''),
+                        'signup_bonus': card_data.get('signup_bonus', ''),
+                        'annual_fee': card_data.get('annual_fee', ''),
+                        'notes': card_data.get('notes', '')
+                    }
+                except:
+                    # If all parsing fails, try regex to extract reward categories
+                    import re
+                    categories = re.findall(r"'([^']*points[^']*)'", content)
+                    if categories:
+                        reward_categories = categories
+    
+    except Exception as e:
+        logger.error(f"Error parsing chat output: {str(e)}")
+        # Return empty data on error
+        reward_categories = []
+        extra_info = {
+            'card_name': '',
+            'signup_bonus': '',
+            'annual_fee': '',
+            'notes': ''
+        }
+    
+    return CardInfo(reward_categories=reward_categories, extra_info=extra_info)
