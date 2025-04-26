@@ -8,6 +8,7 @@ import Login from './pages/Login/Login';
 import LinkAccounts from './pages/LinkAccounts';
 import RewardsSummary from './pages/RewardsSummary';
 import CardDetails from './pages/CardDetails';
+import Dashboard from './pages/Dashboard';
 import logo from './assets/smartswipe-logo.png';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -29,7 +30,7 @@ const Sidebar: React.FC = () => {
           <li>
             <Link to="/home" className={location.pathname === '/home' ? 'active' : ''}>
               <i className="fas fa-home"></i>
-              <span>Home</span>
+              <span>Dashboard</span>
             </Link>
           </li>
           <li>
@@ -106,10 +107,7 @@ const AppRoutes: React.FC = () => {
           {/* Protected routes */}
           <Route path="/home" element={
             <ProtectedRoute>
-              <div>
-                <h1>Home Dashboard</h1>
-                <p>Welcome to your Smart Swipe dashboard</p>
-              </div>
+              <Dashboard />
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
