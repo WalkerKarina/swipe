@@ -1316,7 +1316,7 @@ def chat_completions():
             'messages': [
             {
                 "role": "system",
-                "content": "You are an expert on U.S. credit card rewards programs. Your answers should be clear, concise, and updated based on the most recent information."
+                "content": "You are an expert on U.S. credit card rewards programs. Your answers should be formated in a way that is easy to make the categories into json and based on the most recent information."
                 },
                 {
                 "role": "user",
@@ -1349,13 +1349,147 @@ def chat_completions():
             return jsonify({'error': error_message}), response.status_code
         
         logger.info("Successfully received response from OpenAI API")
-        logger.debug(f"OpenAI response: {json.dumps(response.json(), indent=2)}")
+        
+        # Parse the response to extract just the content
+        try:
+            response_json = response.json()
             
-        # Return response from OpenAI
-        return jsonify(response.json())
+            # Log the full response for debugging
+            logger.debug(f"OpenAI chat completion full response: {json.dumps(response_json, indent=2)}")
+            
+            # Extract only the content from the response
+            content_text = ""
+            
+            if 'choices' in response_json and len(response_json['choices']) > 0:
+                message = response_json['choices'][0].get('message', {})
+                content_text = message.get('content', '')
+            
+            logger.debug(f"Extracted content: {content_text}")
+            
+            # Parse the content to extract structured data
+            parsed_data = chat_output_parser(response_json)
+            
+            # Return structured response
+            return jsonify({
+                'content': content_text,
+                'card_type': card_type,
+                'reward_categories': parsed_data.reward_categories,
+                'extra_info': parsed_data.extra_info
+            })
+            
+        except Exception as parse_error:
+            logger.exception(f"Error parsing OpenAI response: {str(parse_error)}")
+            # If we can't parse properly, return the full response
+            return jsonify(response.json())
+            
     except Exception as e:
         import traceback
         error_detail = traceback.format_exc() 
         logger.exception(f"Error in chat_completions: {str(e)}")
         return jsonify({'error': str(e), 'traceback': error_detail}), 500
 
+@plaid_bp.route('/chat/websearch', methods=['POST'])
+def chat_web_search():
+    """
+    Endpoint to create a chat completion with OpenAI using web search capabilities
+    """
+
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    if not OPENAI_API_KEY:
+        raise ValueError("OpenAI API key must be set in environment variables")
+    try:
+        logger.info("Received web search request")
+        
+        # Get request data
+        data = request.json
+        if not data:
+            logger.warning("No JSON data provided in web search request")
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        # Validate required fields
+        if not data.get('card_type'):
+            logger.warning("Missing required field: card_type for web search")
+            return jsonify({'error': 'card_type is required'}), 400
+        
+        card_type = data['card_type']
+        logger.info(f"Processing web search request for card type: {card_type}")
+        
+        # Prepare request to OpenAI
+        headers = {
+            'Authorization': f'Bearer {OPENAI_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Set defaults if not provided
+        payload = {
+            'model': "gpt-4o",
+            "tools": [{"type": "web_search_preview"}],
+            "input": f"What are the current reward categories and deals for the {card_type} card?",
+            'max_output_tokens': data.get('max_output_tokens', 500),
+            'temperature': data.get('temperature', 0.7),
+        }
+        
+        logger.debug(f"Sending web search request to OpenAI with payload: {json.dumps(payload, indent=2)}")
+        
+        # Make request to OpenAI
+        response = requests.post(
+            'https://api.openai.com/v1/responses',
+            headers=headers,
+            json=payload
+        )
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            error_message = f"OpenAI web search API request failed with status {response.status_code}"
+            try:
+                error_data = response.json()
+                error_message += f": {json.dumps(error_data)}"
+                logger.error(f"OpenAI web search API error: {error_message}")
+            except:
+                error_message += f": {response.text}"
+                logger.error(f"OpenAI web search API error: {error_message}")
+            return jsonify({'error': error_message}), response.status_code
+        
+        logger.info(f"Successfully received web search response from OpenAI for card type: {card_type}")
+        
+        # Parse the response to extract just the text content
+        try:
+            response_json = response.json()
+            
+            # Log the full response for debugging
+            logger.debug(f"OpenAI web search full response: {json.dumps(response_json, indent=2)}")
+            
+            # Extract only the text from the response
+            extracted_text = ""
+            
+            if 'output' in response_json:
+                for output_item in response_json['output']:
+                    if output_item.get('type') == 'message' and 'content' in output_item:
+                        for content_item in output_item['content']:
+                            if content_item.get('type') == 'output_text':
+                                extracted_text = content_item.get('text', '')
+                                break
+            
+            logger.debug(f"Extracted text: {extracted_text}")
+            
+            # Return only the extracted text in a simplified response
+            return jsonify({
+                'text': extracted_text,
+                'card_type': card_type
+            })
+            
+        except Exception as parse_error:
+            logger.exception(f"Error parsing OpenAI response: {str(parse_error)}")
+            # If we can't parse properly, return the full response
+            return jsonify(response.json())
+            
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc() 
+        logger.exception(f"Error in chat_web_search: {str(e)}")
+        return jsonify({'error': str(e), 'traceback': error_detail}), 500
+
+def chat_output_parser(response):
+    """
+    Parse the output of a chat completion with OpenAI
+    """
