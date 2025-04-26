@@ -6,6 +6,7 @@
   background-color: transparent;
   overflow-x: hidden;
   box-sizing: border-box;
+  z-index: 1;
 }
 
 .dashboard-loading {
@@ -22,6 +23,8 @@
   align-items: flex-start;
   margin-bottom: 2.5rem;
   padding-top: 3.5rem;
+  position: relative;
+  z-index: 5;
 }
 
 .header-content {

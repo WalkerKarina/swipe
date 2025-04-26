@@ -29,23 +29,29 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       try {
         // Fetch cashback and transaction summary in parallel
-        const [cashbackData, summaryData] = await Promise.all([
-          plaidService.getCashBackSummary(user.id).catch(() => ({
-            total_cash_back: 0,
-            monthly_cash_back: 0,
-            rewards_by_category: {}
-          })),
+        const [cashbackResponse, summaryData] = await Promise.all([
+          plaidService.getCashBackSummary(user.id).catch(() => null),
           transactionService.getTransactionSummary(user.id).catch(() => ({
             spending_by_card: {},
             cashback_by_card: {}
           }))
         ]);
         
-        setCashbackSummary(cashbackData || {
-          total_cash_back: 0,
-          monthly_cash_back: 0,
-          rewards_by_category: {}
-        });
+        // Parse cashback data correctly, matching the API response structure
+        if (cashbackResponse && cashbackResponse.status === 'success' && cashbackResponse.data) {
+          const cashbackData: CashBackSummary = {
+            total_cash_back: cashbackResponse.data.total_cashback || 0,
+            monthly_cash_back: cashbackResponse.data.total_cashback || 0, // Using total as monthly for now
+            rewards_by_category: cashbackResponse.data.cashback_by_card || {}
+          };
+          setCashbackSummary(cashbackData);
+        } else {
+          setCashbackSummary({
+            total_cash_back: 0,
+            monthly_cash_back: 0,
+            rewards_by_category: {}
+          });
+        }
         
         setTransactionSummary(summaryData || {
           spending_by_card: {},
@@ -99,11 +105,11 @@ const Dashboard: React.FC = () => {
   
   // Find top card (by cashback)
   const getTopCard = () => {
-    if (!transactionSummary || !transactionSummary.cashback_by_card) {
+    if (!cashbackSummary || !cashbackSummary.rewards_by_category) {
       return { card: 'N/A', amount: 0 };
     }
     
-    const cards = Object.entries(transactionSummary.cashback_by_card || {});
+    const cards = Object.entries(cashbackSummary.rewards_by_category || {});
     if (cards.length === 0) {
       return { card: 'N/A', amount: 0 };
     }
@@ -148,43 +154,6 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="card-content">
             <h3 className="amount">${(cashbackSummary?.monthly_cash_back || 0).toFixed(2)}</h3>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${Math.min(100, (cashbackSummary?.monthly_cash_back || 0) * 2)}%` }}
-              ></div>
-            </div>
-            <p className="progress-label">Points Redeemed</p>
-          </div>
-        </div>
-        
-        {/* Top Category Card */}
-        <div className="dashboard-card top-category">
-          <div className="card-header">
-            <h2>TOP REWARDS CATEGORY</h2>
-            <p className="period">THIS MONTH</p>
-            <div className="chart-icon">
-              <i className="fas fa-chart-pie"></i>
-            </div>
-          </div>
-          <div className="card-content">
-            <h3 className="amount">${(topCategory.amount || 0).toFixed(2)}</h3>
-            <div className="category-badge">{topCategory.category || 'None'}</div>
-            <div className="donut-chart">
-              <div className="donut-hole"></div>
-              <div 
-                className="donut-segment" 
-                style={{ 
-                  transform: `rotate(0deg) scale(1)`,
-                  backgroundColor: '#5CAEA2',
-                  clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos(((topCategory.percentage || 0) / 100) * Math.PI * 2)}% ${50 - 50 * Math.sin(((topCategory.percentage || 0) / 100) * Math.PI * 2)}%, 50% 50%)`
-                }}
-              ></div>
-              <div className="donut-label">
-                <span>{topCategory.percentage || 0}%</span>
-                <span>Total Rewards</span>
-              </div>
-            </div>
           </div>
         </div>
         
@@ -200,20 +169,6 @@ const Dashboard: React.FC = () => {
           <div className="card-content">
             <h3 className="card-name">{topCard.card || 'No Card Data'}</h3>
             <p className="card-rewards">${(topCard.amount || 0).toFixed(2)} in rewards</p>
-          </div>
-        </div>
-        
-        {/* Year-to-Date Rewards Card */}
-        <div className="dashboard-card ytd-rewards">
-          <div className="card-header">
-            <h2>YEAR-TO-DATE REWARDS</h2>
-            <div className="calendar-icon">
-              <i className="fas fa-calendar-alt"></i>
-            </div>
-          </div>
-          <div className="card-content">
-            <h3 className="amount">${(cashbackSummary?.total_cash_back || 0).toFixed(2)}</h3>
-            <p className="ytd-label">Total cashback earned this year</p>
           </div>
         </div>
       </div>

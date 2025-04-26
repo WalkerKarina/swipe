@@ -162,6 +162,7 @@
   right: 3rem;
   display: flex;
   align-items: center;
+  z-index: 1000;
 }
 
 .notification-icon {
