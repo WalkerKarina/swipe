@@ -1277,7 +1277,6 @@ def get_optimal_cashback(user_id=None):
             'message': str(e)
         }), 500
 
-# TODO: really this should not be here, but its here for now
 @plaid_bp.route('/chat/completions', methods=['POST'])
 def chat_completions():
     """
@@ -1302,7 +1301,7 @@ def chat_completions():
             return jsonify({'error': 'card_type is required'}), 400
         
         card_type = data['card_type']
-        logger.info(f"OpenAI:Processing request for card type: {card_type}")
+        logger.info(f"OpenAI: Processing request for card type: {card_type}")
         
         # Prepare request to OpenAI
         headers = {
@@ -1316,7 +1315,15 @@ def chat_completions():
             'messages': [
             {
                 "role": "system",
-                "content": "You are an expert on U.S. credit card rewards programs. Your answers should be formated in a way that is easy to make the categories into json and based on the most recent information."
+                "content":  "You are an expert on U.S. credit card rewards programs. "
+            "Always provide information based on the most recent known details (as of 2024). "
+            "When answering, always format your response as a valid Python dictionary with these keys:\n\n"
+            "- 'card_name': (string) the name of the card\n"
+            "- 'reward_categories': (list of strings) major categories and their points/cashback rates\n"
+            "- 'signup_bonus': (string) description of the current signup bonus\n"
+            "- 'annual_fee': (string) the annual fee information\n"
+            "- 'notes': (string) any other important information\n\n"
+            "Respond ONLY with the dictionary, no extra text or explanations."
                 },
                 {
                 "role": "user",
@@ -1350,43 +1357,63 @@ def chat_completions():
         
         logger.info("Successfully received response from OpenAI API")
         
-        # Parse the response to extract just the content
+        # Parse the response to extract structured data
         try:
             response_json = response.json()
             
             # Log the full response for debugging
             logger.debug(f"OpenAI chat completion full response: {json.dumps(response_json, indent=2)}")
             
-            # Extract only the content from the response
-            content_text = ""
+            # Use the parser to extract structured data
+            parsed_data = chat_output_parser(response_json)
             
+            # Get the original content text for reference
+            content_text = ""
             if 'choices' in response_json and len(response_json['choices']) > 0:
                 message = response_json['choices'][0].get('message', {})
                 content_text = message.get('content', '')
             
-            logger.debug(f"Extracted content: {content_text}")
-            
-            # Parse the content to extract structured data
-            parsed_data = chat_output_parser(response_json)
-            
             # Return structured response
             return jsonify({
-                'content': content_text,
                 'card_type': card_type,
                 'reward_categories': parsed_data.reward_categories,
-                'extra_info': parsed_data.extra_info
+                'extra_info': parsed_data.extra_info,
+                'raw_content': content_text  # Include raw content for debugging if needed
             })
             
         except Exception as parse_error:
             logger.exception(f"Error parsing OpenAI response: {str(parse_error)}")
-            # If we can't parse properly, return the full response
-            return jsonify(response.json())
+            # Return a more user-friendly error with the raw response
+            return jsonify({
+                'error': 'Failed to parse card information',
+                'message': str(parse_error),
+                'card_type': card_type,
+                'reward_categories': [],
+                'extra_info': {
+                    'card_name': card_type,
+                    'signup_bonus': '',
+                    'annual_fee': '',
+                    'notes': 'Error parsing card information'
+                },
+                'raw_response': response.json() if response.text else {}
+            }), 500
             
     except Exception as e:
         import traceback
         error_detail = traceback.format_exc() 
         logger.exception(f"Error in chat_completions: {str(e)}")
-        return jsonify({'error': str(e), 'traceback': error_detail}), 500
+        return jsonify({
+            'error': str(e), 
+            'traceback': error_detail,
+            'card_type': data.get('card_type', 'unknown'),
+            'reward_categories': [],
+            'extra_info': {
+                'card_name': data.get('card_type', 'unknown'),
+                'signup_bonus': '',
+                'annual_fee': '',
+                'notes': 'Error processing request'
+            }
+        }), 500
 
 @plaid_bp.route('/chat/websearch', methods=['POST'])
 def chat_web_search():
@@ -1491,5 +1518,97 @@ def chat_web_search():
 
 def chat_output_parser(response):
     """
-    Parse the output of a chat completion with OpenAI
+    Parse the output of a chat completion with OpenAI.
+    Extracts the structured card information from the response and returns it in a usable format.
+    
+    Args:
+        response (dict): The full response from OpenAI API
+        
+    Returns:
+        An object with structured card data including reward_categories and extra_info
     """
+    from collections import namedtuple
+    
+    # Define a simple data structure for returning the parsed result
+    CardInfo = namedtuple('CardInfo', ['reward_categories', 'extra_info'])
+    
+    try:
+        # Extract the content from the response
+        content = ""
+        if 'choices' in response and len(response['choices']) > 0:
+            message = response['choices'][0].get('message', {})
+            content = message.get('content', '')
+        
+        # Default values in case parsing fails
+        reward_categories = []
+        extra_info = {
+            'card_name': '',
+            'signup_bonus': '',
+            'annual_fee': '',
+            'notes': ''
+        }
+        
+        # Check if content is not empty
+        if content:
+            # Extract the Python dictionary string from the content
+            # It's usually wrapped in ```python and ``` markers
+            if '```python' in content and '```' in content.split('```python', 1)[1]:
+                dict_str = content.split('```python', 1)[1].split('```', 1)[0].strip()
+            elif '```' in content and '```' in content.split('```', 1)[1]:
+                # Handle case where it's just wrapped in ``` without language specification
+                dict_str = content.split('```', 1)[1].split('```', 1)[0].strip()
+            else:
+                # If no code blocks, use the entire content
+                dict_str = content.strip()
+            
+            # Clean up the dictionary string (replace single quotes with double quotes for JSON parsing)
+            # Also handle potential issues with trailing commas
+            dict_str = dict_str.replace("'", '"').replace(',\n}', '\n}')
+            
+            # Try multiple approaches to parse the dictionary
+            try:
+                # First try direct eval (safer than using eval)
+                import ast
+                card_data = ast.literal_eval(content)
+                
+                # Extract the data
+                reward_categories = card_data.get('reward_categories', [])
+                extra_info = {
+                    'card_name': card_data.get('card_name', ''),
+                    'signup_bonus': card_data.get('signup_bonus', ''),
+                    'annual_fee': card_data.get('annual_fee', ''),
+                    'notes': card_data.get('notes', '')
+                }
+            except:
+                try:
+                    # Try JSON parsing with the cleaned string
+                    import json
+                    card_data = json.loads(dict_str)
+                    
+                    # Extract the data
+                    reward_categories = card_data.get('reward_categories', [])
+                    extra_info = {
+                        'card_name': card_data.get('card_name', ''),
+                        'signup_bonus': card_data.get('signup_bonus', ''),
+                        'annual_fee': card_data.get('annual_fee', ''),
+                        'notes': card_data.get('notes', '')
+                    }
+                except:
+                    # If all parsing fails, try regex to extract reward categories
+                    import re
+                    categories = re.findall(r"'([^']*points[^']*)'", content)
+                    if categories:
+                        reward_categories = categories
+    
+    except Exception as e:
+        logger.error(f"Error parsing chat output: {str(e)}")
+        # Return empty data on error
+        reward_categories = []
+        extra_info = {
+            'card_name': '',
+            'signup_bonus': '',
+            'annual_fee': '',
+            'notes': ''
+        }
+    
+    return CardInfo(reward_categories=reward_categories, extra_info=extra_info)
