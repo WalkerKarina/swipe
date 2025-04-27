@@ -367,19 +367,11 @@ const Transactions: React.FC = () => {
 
   return (
     <div className="transactions-page">
-      <div className="transactions-header">
-        <div>
+      <div className="card-header-wrapper">
+        <div className="card-title">
           <h1>Your Transactions</h1>
           <p>View and analyze your recent financial activity</p>
         </div>
-        <button 
-          className="refresh-button" 
-          onClick={handleRefresh}
-          disabled={isLoading || isRefreshing}
-        >
-          <i className="fas fa-sync-alt refresh-icon"></i>
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
       </div>
       
       {/* Add cashback summary at the top */}
@@ -447,7 +439,7 @@ const Transactions: React.FC = () => {
                 <span className="date">Date</span>
                 <span className="merchant">Merchant</span>
                 <span className="category">Category</span>
-                <span className="account account-column-header">Account</span>
+                <span className="account">Account</span>
                 <span className="amount">Amount</span>
               </div>
               
@@ -470,15 +462,12 @@ const Transactions: React.FC = () => {
                         style={accountColor ? { 
                           backgroundColor: accountColor, 
                           color: 'white',
-                          padding: '3px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.85rem',
-                          display: 'inline-block',
-                          lineHeight: '1.2',
-                          marginLeft: '0px'
+                          padding: '3px 10px',
+                          borderRadius: '10px',
+                          fontSize: '0.85rem'
                         } : undefined}
                       >
-                        {transaction.account_name || 'Unknown'}
+                        &nbsp;&nbsp;&nbsp;&nbsp;{transaction.account_name || 'Unknown'}
                       </span>
                       {transaction.institution_name && (
                         <span className="institution">

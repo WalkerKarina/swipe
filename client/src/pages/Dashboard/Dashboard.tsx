@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { plaidService, transactionService } from '../../services/api';
 import './Dashboard.css';
@@ -21,62 +21,101 @@ const Dashboard: React.FC = () => {
   const [cashbackSummary, setCashbackSummary] = useState<CashBackSummary | null>(null);
   const [transactionSummary, setTransactionSummary] = useState<TransactionSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.id) return;
-      
-      setLoading(true);
-      try {
-        // Fetch cashback and transaction summary in parallel
-        const [cashbackResponse, summaryData] = await Promise.all([
-          plaidService.getCashBackSummary(user.id).catch(() => null),
-          transactionService.getTransactionSummary(user.id).catch(() => ({
-            spending_by_card: {},
-            cashback_by_card: {}
-          }))
-        ]);
-        
-        // Parse cashback data correctly, matching the API response structure
-        if (cashbackResponse && cashbackResponse.status === 'success' && cashbackResponse.data) {
-          const cashbackData: CashBackSummary = {
-            total_cash_back: cashbackResponse.data.total_cashback || 0,
-            monthly_cash_back: cashbackResponse.data.total_cashback || 0, // Using total as monthly for now
-            rewards_by_category: cashbackResponse.data.cashback_by_card || {}
-          };
-          setCashbackSummary(cashbackData);
-        } else {
-          setCashbackSummary({
-            total_cash_back: 0,
-            monthly_cash_back: 0,
-            rewards_by_category: {}
-          });
+  // Function to fetch dashboard data - made into a callback so it can be reused for refresh
+  const fetchData = useCallback(async (forceRefresh = false) => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      // Try to get cached data if not forcing a refresh
+      if (!forceRefresh) {
+        const cachedDashboardData = localStorage.getItem(`dashboard_${user.id}`);
+        if (cachedDashboardData) {
+          const { data, timestamp } = JSON.parse(cachedDashboardData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached dashboard data');
+            setCashbackSummary(data.cashbackSummary);
+            setTransactionSummary(data.transactionSummary);
+            setLoading(false);
+            setIsRefreshing(false);
+            return;
+          }
         }
-        
-        setTransactionSummary(summaryData || {
+      }
+      
+      // Fetch cashback and transaction summary in parallel
+      const [cashbackResponse, summaryData] = await Promise.all([
+        plaidService.getCashBackSummary(user.id).catch(() => null),
+        transactionService.getTransactionSummary(user.id).catch(() => ({
           spending_by_card: {},
           cashback_by_card: {}
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        // Set default values on error
-        setCashbackSummary({
+        }))
+      ]);
+      
+      // Parse cashback data correctly, matching the API response structure
+      let cashbackData: CashBackSummary;
+      if (cashbackResponse && cashbackResponse.status === 'success' && cashbackResponse.data) {
+        cashbackData = {
+          total_cash_back: cashbackResponse.data.total_cashback || 0,
+          monthly_cash_back: cashbackResponse.data.total_cashback || 0, // Using total as monthly for now
+          rewards_by_category: cashbackResponse.data.cashback_by_card || {}
+        };
+      } else {
+        cashbackData = {
           total_cash_back: 0,
           monthly_cash_back: 0,
           rewards_by_category: {}
-        });
-        
-        setTransactionSummary({
-          spending_by_card: {},
-          cashback_by_card: {}
-        });
-      } finally {
-        setLoading(false);
+        };
       }
-    };
-    
-    fetchData();
+      
+      setCashbackSummary(cashbackData);
+      setTransactionSummary(summaryData || {
+        spending_by_card: {},
+        cashback_by_card: {}
+      });
+      
+      // Cache the new data
+      localStorage.setItem(`dashboard_${user.id}`, JSON.stringify({
+        data: {
+          cashbackSummary: cashbackData,
+          transactionSummary: summaryData
+        },
+        timestamp: Date.now()
+      }));
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Set default values on error
+      setCashbackSummary({
+        total_cash_back: 0,
+        monthly_cash_back: 0,
+        rewards_by_category: {}
+      });
+      
+      setTransactionSummary({
+        spending_by_card: {},
+        cashback_by_card: {}
+      });
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
   }, [user?.id]);
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  // Handle refresh button click
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchData(true);
+  };
   
   // Calculate top category
   const getTopCategory = () => {
@@ -135,6 +174,7 @@ const Dashboard: React.FC = () => {
           <h1>Dashboard</h1>
           <p>Track your rewards and optimize your spending</p>
         </div>
+    
       </div>
       
       {loading ? (
