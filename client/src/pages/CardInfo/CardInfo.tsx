@@ -22,6 +22,7 @@ const CardInfo: React.FC = () => {
   const [cardRewards, setCardRewards] = useState<CardRewardDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Function to get color for a card
   const getCardColor = (index: number): string => {
@@ -35,9 +36,9 @@ const CardInfo: React.FC = () => {
     return baseColors[index % baseColors.length];
   };
 
-  // Load all card rewards from localStorage
+  // Load all card rewards from localStorage or fetch from API if not available
   useEffect(() => {
-    const loadAllCardRewards = () => {
+    const loadAllCardRewards = async () => {
       setIsLoading(true);
       
       try {
@@ -69,17 +70,48 @@ const CardInfo: React.FC = () => {
         }
         
         // Try to load details for each card
-        cardNames.forEach(cardName => {
-          const cardDetailsString = localStorage.getItem(`card_details_${cardName}`);
-          if (cardDetailsString) {
+        const fetchPromises = cardNames.map(async (cardName) => {
+          // If refreshing or not in localStorage, fetch from API
+          if (isRefreshing || !localStorage.getItem(`card_details_${cardName}`)) {
             try {
-              const cardDetails = JSON.parse(cardDetailsString);
-              rewards.push(cardDetails);
+              console.log(`Fetching card details for ${cardName} from API`);
+              const cardDetails = await plaidService.getCardDetails(cardName);
+              if (cardDetails) {
+                rewards.push(cardDetails);
+                // Cache the result
+                localStorage.setItem(`card_details_${cardName}`, JSON.stringify(cardDetails));
+              }
             } catch (e) {
-              console.error(`Error parsing card details for ${cardName}:`, e);
+              console.error(`Error fetching details for ${cardName} from API:`, e);
+              
+              // If error fetching and we have cached data, use that as fallback
+              if (!isRefreshing) {
+                const cachedData = localStorage.getItem(`card_details_${cardName}`);
+                if (cachedData) {
+                  try {
+                    rewards.push(JSON.parse(cachedData));
+                  } catch (parseError) {
+                    console.error(`Error parsing cached data for ${cardName}:`, parseError);
+                  }
+                }
+              }
+            }
+          } else {
+            // Try to get from localStorage first when not refreshing
+            const cardDetailsString = localStorage.getItem(`card_details_${cardName}`);
+            if (cardDetailsString) {
+              try {
+                const cardDetails = JSON.parse(cardDetailsString);
+                rewards.push(cardDetails);
+              } catch (e) {
+                console.error(`Error parsing card details for ${cardName}:`, e);
+              }
             }
           }
         });
+        
+        // Wait for all fetch operations to complete
+        await Promise.all(fetchPromises);
         
         setCardRewards(rewards);
         setError(null);
@@ -88,11 +120,16 @@ const CardInfo: React.FC = () => {
         setError('Failed to load reward details.');
       } finally {
         setIsLoading(false);
+        setIsRefreshing(false);
       }
     };
     
     loadAllCardRewards();
-  }, []);
+  }, [isRefreshing]);
+
+  const handleRefreshAll = () => {
+    setIsRefreshing(true);
+  };
 
   const handleCardClick = (cardName: string) => {
     navigate(`/card-details/${encodeURIComponent(cardName)}`);
@@ -126,8 +163,19 @@ const CardInfo: React.FC = () => {
 
   return (
     <div className="card-info-page">
-      <h1>Your Credit Card Rewards</h1>
-      <p>View all your credit card reward details in one place</p>
+      <div className="card-info-header">
+        <div>
+          <h1>Your Credit Card Rewards</h1>
+          <p>View all your credit card reward details in one place</p>
+        </div>
+        <button 
+          className="refresh-all-button" 
+          onClick={handleRefreshAll}
+          disabled={isRefreshing}
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh All Cards'}
+        </button>
+      </div>
       
       {error && <div className="error-message">{error}</div>}
       
