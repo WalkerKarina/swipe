@@ -372,6 +372,16 @@ const Transactions: React.FC = () => {
           <h1>Your Transactions</h1>
           <p>View and analyze your recent financial activity</p>
         </div>
+        <div className="refresh-button-container">
+          <button 
+            onClick={handleRefresh} 
+            className="refresh-button"
+            disabled={isRefreshing}
+          >
+            <i className={`refresh-icon fa-solid ${isRefreshing ? 'fa-spinner fa-spin' : 'fa-rotate'}`}></i>
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </button>
+        </div>
       </div>
       
       {/* Add cashback summary at the top */}

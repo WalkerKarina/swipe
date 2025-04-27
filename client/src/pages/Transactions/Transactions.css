@@ -12,9 +12,8 @@
 .card-header-wrapper {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  width: 100%;
+  align-items: flex-start;
+  margin-bottom: 24px;
   position: relative;
 }
 
@@ -23,17 +22,12 @@
 }
 
 .card-title h1 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  padding-top: 0;
+  margin-bottom: 8px;
 }
 
 .card-title p {
-  color: #666;
-  margin-bottom: 0;
-  font-size: 1rem;
+  color: #6e6e73;
+  margin-top: 0;
 }
 
 /* Cashback Summary Styles */
@@ -631,10 +625,9 @@
 }
 
 .refresh-button-container {
-  position: fixed;
-  top: 2rem;
-  right: 2.5rem;
-  z-index: 100;
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
 }
 
 .refresh-button {
@@ -650,6 +643,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
+  margin-top: 0;
 }
 
 .refresh-icon {
@@ -684,13 +678,6 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Fix amount header text alignment to match other headers */
-.transaction-header span {
-  color: white;
-  text-transform: uppercase;
-  align-items: center;
-}
-
 /* Special override for the account in the header - must be different from account in rows */
 .transaction-header .account {
   flex-direction: row !important;
@@ -705,12 +692,17 @@
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
+  justify-content: flex-start !important;
   height: 100% !important;
   color: white !important;
   text-transform: uppercase !important;
   font-size: 0.95rem !important;
   font-weight: 600 !important;
   margin: 0 !important;
+  align-self: center !important;
+  vertical-align: middle !important;
+  padding: 0 !important;
+  position: static !important;
 }
 
 /* Specifically target the transaction item account cells */
@@ -752,4 +744,14 @@
   width: 8px; /* Adjust this to control the amount of spacing */
   height: 1px;
   margin-right: 4px;
+}
+
+/* Force all transaction header spans to align properly and consistently */
+.transaction-header > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  align-self: center !important;
+  vertical-align: middle !important;
 } 
