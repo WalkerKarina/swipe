@@ -66,7 +66,10 @@ const CashbackSummary: React.FC = () => {
   const handleCardClick = (cardName: string) => {
     console.log("Navigating to card details for:", cardName);
     // Navigate to the card details page with the card name as a URL parameter
-    navigate(`/card-details/${encodeURIComponent(cardName)}`);
+    // and pass state to indicate it came from the transactions page
+    navigate(`/card-details/${encodeURIComponent(cardName)}`, { 
+      state: { from: 'transactions' } 
+    });
   };
 
   if (isLoading) {

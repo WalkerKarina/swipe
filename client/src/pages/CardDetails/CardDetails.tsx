@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { plaidService } from '../../services/api';
 import './CardDetails.css';
 
@@ -18,15 +18,24 @@ interface CardRewardDetails {
 const CardDetails: React.FC = () => {
   const { cardName } = useParams<{ cardName: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [cardDetails, setCardDetails] = useState<CardRewardDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [referrer, setReferrer] = useState<string>('/card-info');
 
   // Function to decode the URL-encoded card name
   const decodedCardName = cardName ? decodeURIComponent(cardName) : '';
 
   useEffect(() => {
+    // Check the referrer from the location state
+    if (location.state && location.state.from === 'transactions') {
+      setReferrer('/transactions');
+    } else {
+      setReferrer('/card-info');
+    }
+
     console.log("Card name parameter:", cardName);
     console.log("Decoded card name:", decodedCardName);
     
@@ -100,14 +109,14 @@ const CardDetails: React.FC = () => {
     if (!hasCachedData || isRefreshing) {
       fetchCardDetails();
     }
-  }, [decodedCardName, isRefreshing]);
+  }, [decodedCardName, isRefreshing, location]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
   };
 
   const handleBack = () => {
-    navigate('/card-info');
+    navigate(referrer);
   };
 
   if (isLoading) {
@@ -133,7 +142,9 @@ const CardDetails: React.FC = () => {
         <div className="card-details-container">
           <div className="error-message">
             <p>{error || 'Could not load card details.'}</p>
-            <button className="back-button" onClick={handleBack}>Back to Card Rewards</button>
+            <button className="back-button" onClick={handleBack}>
+              Back to {referrer === '/transactions' ? 'Transactions' : 'Card Rewards'}
+            </button>
             <button className="refresh-button" onClick={handleRefresh}>
               <i className="fas fa-sync-alt refresh-icon"></i>
               Try Again
@@ -148,7 +159,9 @@ const CardDetails: React.FC = () => {
     <div className="card-details-page">
       <div className="card-details-container">
         <div className="card-details-header">
-          <button className="back-button" onClick={handleBack}>← Back to Card Rewards</button>
+          <button className="back-button" onClick={handleBack}>
+            ← Back to {referrer === '/transactions' ? 'Transactions' : 'Card Rewards'}
+          </button>
           <h1>{cardDetails.extra_info.card_name}</h1>
           <button className="refresh-button" onClick={handleRefresh} disabled={isRefreshing}>
             <i className="fas fa-sync-alt refresh-icon"></i>

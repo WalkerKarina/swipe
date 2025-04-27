@@ -132,13 +132,17 @@ const CardInfo: React.FC = () => {
   };
 
   const handleCardClick = (cardName: string) => {
-    navigate(`/card-details/${encodeURIComponent(cardName)}`);
+    navigate(`/card-details/${encodeURIComponent(cardName)}`, {
+      state: { from: 'card-info' }
+    });
   };
 
   const handleViewDetails = (event: React.MouseEvent, cardName: string) => {
     // Prevent the click from bubbling up to the card
     event.stopPropagation();
-    navigate(`/card-details/${encodeURIComponent(cardName)}`);
+    navigate(`/card-details/${encodeURIComponent(cardName)}`, {
+      state: { from: 'card-info' }
+    });
   };
 
   const handleAddCard = () => {
