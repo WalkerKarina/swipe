@@ -12,27 +12,81 @@ declare global {
   }
 }
 
+// Cache expiration time (in milliseconds) - 5 minutes
+const CACHE_EXPIRATION = 5 * 60 * 1000;
+
 export const usePlaidLink = (userId?: string) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRemoving, setIsRemoving] = useState(false);
 
+  // Load accounts from cache
+  const loadFromCache = useCallback(() => {
+    if (!userId) return null;
+    
+    const cachedData = localStorage.getItem(`accounts_${userId}`);
+    if (!cachedData) return null;
+    
+    try {
+      const { data, timestamp } = JSON.parse(cachedData);
+      // Check if cache is still valid
+      if (Date.now() - timestamp < CACHE_EXPIRATION) {
+        return data;
+      }
+    } catch (error) {
+      console.error('Error parsing cached accounts:', error);
+    }
+    
+    return null;
+  }, [userId]);
+
+  // Save accounts to cache
+  const saveToCache = useCallback((data: LinkedAccount[]) => {
+    if (!userId) return;
+    
+    try {
+      const cacheData = {
+        data,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(`accounts_${userId}`, JSON.stringify(cacheData));
+    } catch (error) {
+      console.error('Error saving accounts to cache:', error);
+    }
+  }, [userId]);
+
   // Fetch existing linked accounts
-  const fetchAccounts = useCallback(async (skipLoadingState = false) => {
+  const fetchAccounts = useCallback(async (skipLoadingState = false, bypassCache = false) => {
     if (!userId) return;
     
     try {
       if (!skipLoadingState) {
         setIsLoading(true);
       }
+      
+      // Try to load from cache first if not bypassing cache
+      if (!bypassCache) {
+        const cachedAccounts = loadFromCache();
+        if (cachedAccounts) {
+          setAccounts(cachedAccounts);
+          if (!skipLoadingState) {
+            setIsLoading(false);
+          }
+          return cachedAccounts;
+        }
+      }
+      
+      // If no cache or bypassing cache, fetch from API
       const data = await plaidService.getAccounts(userId);
       
-      // Only update the accounts state if we're not skipping the loading state
-      // or if the accounts list is currently empty
+      // Update the accounts state
       if (!skipLoadingState || accounts.length === 0) {
         setAccounts(data.accounts);
       }
+      
+      // Cache the fetched accounts
+      saveToCache(data.accounts);
       
       return data.accounts;
     } catch (error) {
@@ -43,7 +97,12 @@ export const usePlaidLink = (userId?: string) => {
         setIsLoading(false);
       }
     }
-  }, [userId, accounts.length]);
+  }, [userId, accounts.length, loadFromCache, saveToCache]);
+
+  // Force refresh accounts (bypass cache)
+  const refreshAccounts = useCallback(async () => {
+    return fetchAccounts(false, true);
+  }, [fetchAccounts]);
 
   // Get a link token from the server
   const getLinkToken = useCallback(async () => {
@@ -89,11 +148,8 @@ export const usePlaidLink = (userId?: string) => {
             // Then get a fresh link token
             await getLinkToken();
             
-            // Fetch the updated accounts but don't update state yet
-            const updatedAccounts = await plaidService.getAccounts(userId);
-            
-            // Now update the accounts state all at once after all operations
-            setAccounts(updatedAccounts.accounts);
+            // Fetch the updated accounts with cache bypass
+            const updatedAccounts = await fetchAccounts(false, true);
             
             // Signal refresh complete
             if (onSuccess) {
@@ -145,15 +201,20 @@ export const usePlaidLink = (userId?: string) => {
     try {
       setIsRemoving(true);
       await plaidService.removeAccount(accountId, userId);
+      
       // Remove account from state if successfully deleted
-      setAccounts(prevAccounts => prevAccounts.filter(account => account.id !== accountId));
+      const updatedAccounts = accounts.filter(account => account.id !== accountId);
+      setAccounts(updatedAccounts);
+      
+      // Update the cache with the new account list
+      saveToCache(updatedAccounts);
     } catch (error) {
       console.error('Error removing account:', error);
       alert('An error occurred while removing the account');
     } finally {
       setIsRemoving(false);
     }
-  }, [userId]);
+  }, [userId, accounts, saveToCache]);
 
   // Initialize on mount
   useEffect(() => {
@@ -161,15 +222,26 @@ export const usePlaidLink = (userId?: string) => {
       // First set loading state
       setIsLoading(true);
       
-      // Get link token and fetch accounts in parallel
-      Promise.all([
-        getLinkToken(),
-        fetchAccounts(true) // Skip additional loading state change
-      ]).finally(() => {
+      // Try loading from cache first
+      const cachedAccounts = loadFromCache();
+      if (cachedAccounts) {
+        setAccounts(cachedAccounts);
         setIsLoading(false);
-      });
+        
+        // Still fetch in the background to update the cache
+        getLinkToken();
+        fetchAccounts(true, false).catch(console.error);
+      } else {
+        // If no cache, get link token and fetch accounts in parallel
+        Promise.all([
+          getLinkToken(),
+          fetchAccounts(true, false) // Allow using cache, but skip additional loading state change
+        ]).finally(() => {
+          setIsLoading(false);
+        });
+      }
     }
-  }, [userId, getLinkToken, fetchAccounts]);
+  }, [userId, getLinkToken, fetchAccounts, loadFromCache]);
 
   return {
     accounts,
@@ -177,6 +249,7 @@ export const usePlaidLink = (userId?: string) => {
     isLoading,
     isRemoving,
     fetchAccounts,
+    refreshAccounts,
     openPlaidLink,
     removeAccount
   };
