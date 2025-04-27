@@ -5,11 +5,13 @@ import Profile from './pages/Profile/Profile';
 import Transactions from './pages/Transactions/Transactions';
 import Landing from './pages/Landing/Landing';
 import Login from './pages/Login/Login';
-import LinkAccounts from './pages/LinkAccounts';
+import LinkAccounts from './pages/LinkAccounts/LinkAccounts';
 import RewardsSummary from './pages/RewardsSummary';
-import CardDetails from './pages/CardDetails';
+import CardDetails from './pages/CardDetails/CardDetails';
+import VirtualCardDetails from './pages/VirtualCardDetails/VirtualCardDetails';
 import CardInfo from './pages/CardInfo/CardInfo';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Dashboard/Dashboard';
+import PitchPage from './pages/PitchPage';
 import logo from './assets/smartswipe-logo.png';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -120,7 +122,9 @@ const AppRoutes: React.FC = () => {
   const location = useLocation();
   const isPublicRoute = !user && (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/signup');
   const isSpecialRoute = location.pathname === '/link-accounts' || 
-                         location.pathname === '/rewards-summary';
+                         location.pathname === '/rewards-summary' ||
+                         location.pathname === '/card-details' ||
+                         location.pathname === '/pitch';
 
   return (
     <>
@@ -142,6 +146,16 @@ const AppRoutes: React.FC = () => {
           <Route path="/rewards-summary" element={
             <ProtectedRoute>
               <RewardsSummary />
+            </ProtectedRoute>
+          } />
+          <Route path="/card-details" element={
+            <ProtectedRoute>
+              <VirtualCardDetails />
+            </ProtectedRoute>
+          } />
+          <Route path="/pitch" element={
+            <ProtectedRoute>
+              <PitchPage />
             </ProtectedRoute>
           } />
           <Route path="/card-details/:cardName" element={

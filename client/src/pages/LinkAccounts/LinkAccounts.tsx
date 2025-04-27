@@ -31,11 +31,11 @@ const LinkAccounts: React.FC = () => {
   } = usePlaidLink(user?.id);
 
   // Navigate based on accounts status:
-  // - If accounts are linked, go to rewards summary
-  // - If no accounts linked, now go to card details instead of profile
+  // - If accounts are linked, go to pitch page
+  // - If no accounts linked, go to virtual card details
   const handleContinue = () => {
     if (accounts.length > 0) {
-      navigate('/rewards-summary');
+      navigate('/pitch');
     } else {
       navigate('/card-details');
     }
@@ -135,7 +135,7 @@ const LinkAccounts: React.FC = () => {
                 className="continue-button"
                 disabled={isRefreshing}
               >
-                Continue to Rewards
+                Continue
               </button>
             </>
           )}
