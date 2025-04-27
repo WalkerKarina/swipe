@@ -14,7 +14,6 @@ body, html {
 
 .card-details-page {
   min-height: 100vh;
-  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -22,7 +21,7 @@ body, html {
   padding: 0.75rem 2rem;
   width: 100%;
   box-sizing: border-box;
-  overflow: auto;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -48,6 +47,7 @@ body, html {
   border: none;
   position: relative;
   z-index: 1;
+  padding-bottom: 3rem;
 }
 
 .card-details-card {
@@ -59,6 +59,8 @@ body, html {
   max-width: 500px;
   text-align: center;
   border: 1px solid #000;
+  overflow-y: auto;
+  max-height: 90vh;
 }
 
 .card-details-card h1 {
@@ -167,8 +169,17 @@ body, html {
 }
 
 @media (max-width: 576px) {
+  .card-details-page {
+    padding: 0.75rem 1rem;
+  }
+  
   .card-details-card {
-    padding: 2rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .continue-button {
+    margin-bottom: 1rem;
   }
 }
 
