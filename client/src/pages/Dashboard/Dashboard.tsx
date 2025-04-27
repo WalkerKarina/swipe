@@ -305,19 +305,94 @@ const Dashboard: React.FC = () => {
             <div className="rewards-chart">
               <div className="chart-area">
                 {/* Simplified chart visualization */}
-                <svg width="100%" height="300" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet">
-                  {/* X-axis (months) */}
-                  <line x1="50" y1="250" x2="1150" y2="250" stroke="#ddd" strokeWidth="1" />
+                <svg width="100%" height="350" viewBox="0 0 1200 350" preserveAspectRatio="xMidYMid meet">
+                  {/* Chart border for better visual structure */}
+                  <rect x="50" y="50" width="1100" height="250" fill="none" stroke="#eee" strokeWidth="1" />
+                  
+                  {/* Y-axis */}
+                  <line x1="50" y1="50" x2="50" y2="300" stroke="#666" strokeWidth="1.5" />
+                  
+                  {/* Y-axis labels */}
+                  <text x="45" y="60" textAnchor="end" fontSize="12" fill="#666">$80</text>
+                  <text x="45" y="120" textAnchor="end" fontSize="12" fill="#666">$60</text>
+                  <text x="45" y="180" textAnchor="end" fontSize="12" fill="#666">$40</text>
+                  <text x="45" y="240" textAnchor="end" fontSize="12" fill="#666">$20</text>
+                  <text x="45" y="300" textAnchor="end" fontSize="12" fill="#666">$0</text>
+                  
+                  {/* Y-axis ticks */}
+                  <line x1="45" y1="50" x2="50" y2="50" stroke="#666" strokeWidth="1" />
+                  <line x1="45" y1="120" x2="50" y2="120" stroke="#666" strokeWidth="1" />
+                  <line x1="45" y1="180" x2="50" y2="180" stroke="#666" strokeWidth="1" />
+                  <line x1="45" y1="240" x2="50" y2="240" stroke="#666" strokeWidth="1" />
+                  <line x1="45" y1="300" x2="50" y2="300" stroke="#666" strokeWidth="1" />
+                  
+                  {/* Y-axis title */}
+                  <text x="10" y="175" textAnchor="middle" fontSize="12" fill="#666" transform="rotate(-90, 10, 175)">Rewards ($)</text>
+
+                  {/* X-axis with improved styling */}
+                  <line x1="50" y1="300" x2="1150" y2="300" stroke="#666" strokeWidth="1.5" />
+                  
+                  {/* X-axis ticks and month labels */}
+                  <line x1="142" y1="300" x2="142" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="142" y="320" textAnchor="middle" fontSize="10" fill="#666">Jan</text>
+                  
+                  <line x1="233" y1="300" x2="233" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="233" y="320" textAnchor="middle" fontSize="10" fill="#666">Feb</text>
+                  
+                  <line x1="325" y1="300" x2="325" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="325" y="320" textAnchor="middle" fontSize="10" fill="#666">Mar</text>
+                  
+                  <line x1="417" y1="300" x2="417" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="417" y="320" textAnchor="middle" fontSize="10" fill="#666">Apr</text>
+                  
+                  <line x1="508" y1="300" x2="508" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="508" y="320" textAnchor="middle" fontSize="10" fill="#666">May</text>
+                  
+                  <line x1="600" y1="300" x2="600" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="600" y="320" textAnchor="middle" fontSize="10" fill="#666">Jun</text>
+                  
+                  <line x1="692" y1="300" x2="692" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="692" y="320" textAnchor="middle" fontSize="10" fill="#666">Jul</text>
+                  
+                  <line x1="783" y1="300" x2="783" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="783" y="320" textAnchor="middle" fontSize="10" fill="#666">Aug</text>
+                  
+                  <line x1="875" y1="300" x2="875" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="875" y="320" textAnchor="middle" fontSize="10" fill="#666">Sep</text>
+                  
+                  <line x1="967" y1="300" x2="967" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="967" y="320" textAnchor="middle" fontSize="10" fill="#666">Oct</text>
+                  
+                  <line x1="1058" y1="300" x2="1058" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="1058" y="320" textAnchor="middle" fontSize="10" fill="#666">Nov</text>
+                  
+                  <line x1="1150" y1="300" x2="1150" y2="305" stroke="#666" strokeWidth="1" />
+                  <text x="1150" y="320" textAnchor="middle" fontSize="10" fill="#666">Dec</text>
+                  
+                  {/* X-axis title */}
+                  <text x="600" y="340" textAnchor="middle" fontSize="12" fill="#666" fontWeight="bold">Month</text>
+                  
+                  {/* Grid lines for better readability */}
+                  <line x1="50" y1="120" x2="1150" y2="120" stroke="#eee" strokeWidth="1" strokeDasharray="5,5" />
+                  <line x1="50" y1="180" x2="1150" y2="180" stroke="#eee" strokeWidth="1" strokeDasharray="5,5" />
+                  <line x1="50" y1="240" x2="1150" y2="240" stroke="#eee" strokeWidth="1" strokeDasharray="5,5" />
                   
                   {/* Render SVG paths only for linked cards */}
                   {linkedCards.length > 0 ? (
                     linkedCards.map((card, index) => {
-                      // Use predefined paths, but with dynamic colors
+                      // More distinct paths with clearer trends up to $80 (y=50)
                       const paths = [
-                        "M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150",
-                        "M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200",
-                        "M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180",
-                        "M50,180 Q200,150 350,100 T650,200 T950,100 T1150,180"
+                        // Path 1: Clear upward trend - Cash back increases steadily throughout the year
+                        "M50,270 L142,260 L233,250 L325,240 L417,230 L508,220 L600,210 L692,200 L783,180 L875,160 L967,120 L1058,80 L1150,60",
+                        
+                        // Path 2: End-of-quarter peaks - Cash back spikes at the end of each quarter
+                        "M50,260 L142,250 L233,240 L325,200 L417,230 L508,220 L600,180 L692,210 L783,200 L875,160 L967,190 L1058,170 L1150,70",
+                        
+                        // Path 3: Summer spending - Cash back increases during summer months and holidays
+                        "M50,280 L142,270 L233,260 L325,250 L417,230 L508,160 L600,130 L692,120 L783,140 L875,180 L967,150 L1058,100 L1150,90",
+                        
+                        // Path 4: Gradual growth - Cash back increases steadily but at a more conservative rate
+                        "M50,290 L142,285 L233,280 L325,275 L417,270 L508,260 L600,250 L692,240 L783,220 L875,200 L967,180 L1058,160 L1150,140"
                       ];
                       
                       const pathIndex = index % paths.length;
@@ -327,27 +402,28 @@ const Dashboard: React.FC = () => {
                           d={paths[pathIndex]} 
                           fill="none" 
                           stroke={getCardColor(card, index)} 
-                          strokeWidth="3" 
+                          strokeWidth="4" 
                         />
                       );
                     })
                   ) : (
                     // Fallback to static paths if no linked cards
                     <>
-                      <path d="M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150" 
-                            fill="none" stroke="#ACE5DE" strokeWidth="3" />
-                      <path d="M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200" 
-                            fill="none" stroke="#2777E7" strokeWidth="3" />
-                      <path d="M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180" 
-                            fill="none" stroke="#9DE88C" strokeWidth="3" />
-                      <path d="M50,180 Q200,150 350,100 T650,200 T950,100 T1150,180" 
-                            fill="none" stroke="#388E3C" strokeWidth="3" />
+                      {/* Clear trend static paths with distinct patterns */}
+                      <path d="M50,270 L142,260 L233,250 L325,240 L417,230 L508,220 L600,210 L692,200 L783,180 L875,160 L967,120 L1058,80 L1150,60" 
+                            fill="none" stroke="#ACE5DE" strokeWidth="4" />
+                      <path d="M50,260 L142,250 L233,240 L325,200 L417,230 L508,220 L600,180 L692,210 L783,200 L875,160 L967,190 L1058,170 L1150,70" 
+                            fill="none" stroke="#2777E7" strokeWidth="4" />
+                      <path d="M50,280 L142,270 L233,260 L325,250 L417,230 L508,160 L600,130 L692,120 L783,140 L875,180 L967,150 L1058,100 L1150,90" 
+                            fill="none" stroke="#9DE88C" strokeWidth="4" />
+                      <path d="M50,290 L142,285 L233,280 L325,275 L417,270 L508,260 L600,250 L692,240 L783,220 L875,200 L967,180 L1058,160 L1150,140" 
+                            fill="none" stroke="#388E3C" strokeWidth="4" />
                     </>
                   )}
                 </svg>
                 
-                {/* X-axis labels */}
-                <div className="chart-x-labels">
+                {/* Remove the redundant X-axis labels since we added them to the SVG */}
+                <div className="chart-x-labels" style={{ display: 'none' }}>
                   <span>January</span>
                   <span>February</span>
                   <span>March</span>

@@ -360,6 +360,8 @@
   position: relative;
   margin-bottom: 1rem;
   overflow: hidden;
+  padding-left: 1rem;
+  padding-bottom: 0rem;
 }
 
 .chart-x-labels {
@@ -368,7 +370,7 @@
   padding: 0 50px;
   font-size: 0.75rem;
   color: #777;
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
   overflow: hidden;
 }
 
@@ -387,14 +389,16 @@
   display: flex;
   justify-content: center;
   gap: 2rem;
-  margin-top: 1rem;
+  margin-top: 2rem;
   padding-top: 1rem;
   border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .legend-color {
