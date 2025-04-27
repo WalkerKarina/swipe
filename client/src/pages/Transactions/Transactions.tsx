@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { transactionService, plaidService, Transaction } from '../../services/api';
@@ -32,14 +32,35 @@ const CashbackSummary: React.FC = () => {
 
   useEffect(() => {
     const fetchCashbackData = async () => {
+      if (!user?.id) return;
+      
       try {
         setIsLoading(true);
-        const response = await plaidService.getCashBackSummary(user?.id);
+        
+        // Try to get cached cashback data
+        const cachedData = localStorage.getItem(`cashback_${user.id}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached cashback data');
+            setCashbackData(data);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Fetch fresh data if no cache or cache expired
+        const response = await plaidService.getCashBackSummary(user.id);
         if (response && response.status === 'success' && response.data) {
           setCashbackData(response.data);
           
-          // Store cashback data in localStorage for other components to use
-          localStorage.setItem('cashback_data', JSON.stringify(response.data));
+          // Cache the new data
+          localStorage.setItem(`cashback_${user.id}`, JSON.stringify({
+            data: response.data,
+            timestamp: Date.now()
+          }));
         } else {
           setError('Could not load cashback data.');
         }
@@ -125,13 +146,38 @@ const Transactions: React.FC = () => {
   const [hasLinkedAccounts, setHasLinkedAccounts] = useState(true);
   const [cashbackData, setCashbackData] = useState<CashbackData | null>(null);
   const [cardNameToIndexMap, setCardNameToIndexMap] = useState<Record<string, number>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch cashback data to build the institution-to-color mapping
   useEffect(() => {
     const fetchCashbackData = async () => {
+      if (!user?.id) return;
+      
       try {
         setIsLoading(true);
-        const response = await plaidService.getCashBackSummary(user?.id);
+        
+        // Try to get cached cashback data first
+        const cachedData = localStorage.getItem(`cashback_${user.id}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached cashback data for color mapping');
+            setCashbackData(data);
+            
+            // Create a mapping from card name to its index for color matching
+            const mapping: Record<string, number> = {};
+            Object.keys(data.cashback_by_card).forEach((cardName, index) => {
+              mapping[cardName] = index;
+            });
+            setCardNameToIndexMap(mapping);
+            return;
+          }
+        }
+        
+        // Fetch fresh data if no cache or cache expired
+        const response = await plaidService.getCashBackSummary(user.id);
         if (response && response.status === 'success' && response.data) {
           setCashbackData(response.data);
           
@@ -141,52 +187,100 @@ const Transactions: React.FC = () => {
             mapping[cardName] = index;
           });
           setCardNameToIndexMap(mapping);
+          
+          // Cache the new data
+          localStorage.setItem(`cashback_${user.id}`, JSON.stringify({
+            data: response.data,
+            timestamp: Date.now()
+          }));
         }
       } catch (err: any) {
         console.error('Error fetching cashback data for color mapping:', err);
       }
     };
     
-    if (user?.id) {
-      fetchCashbackData();
+    fetchCashbackData();
+  }, [user?.id]);
+
+  // Function to fetch transactions - made into a callback so it can be reused for refresh
+  const fetchTransactions = useCallback(async (forceRefresh = false) => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Try to get cached transactions if not forcing a refresh
+      if (!forceRefresh) {
+        const cachedData = localStorage.getItem(`transactions_${user.id}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached transactions data');
+            setTransactions(data || []);
+            setHasLinkedAccounts(true);
+            setError(null);
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+      
+      // Fetch fresh data if no cache or forcing refresh
+      const data = await transactionService.getTransactions(user.id);
+      console.log('API response data:', data);
+      
+      if (data.data && data.data.length > 0) {
+        const sample = data.data[0];
+        if (sample.category) {
+          console.log('Sample category:', sample.category, 'type:', typeof sample.category);
+        }
+      }
+      
+      setTransactions(data.data || []);
+      setHasLinkedAccounts(true);
+      setError(null);
+      
+      // Cache the new data
+      localStorage.setItem(`transactions_${user.id}`, JSON.stringify({
+        data: data.data,
+        timestamp: Date.now()
+      }));
+      
+    } catch (err: any) {
+      console.error('Error fetching transactions:', err);
+      // Handle the specific "no linked accounts" error case
+      if (err.response && err.response.status === 404 && 
+          err.response.data && err.response.data.error === 'no_linked_accounts') {
+        setHasLinkedAccounts(false);
+        setError(null);
+      } else {
+        setError('Could not load transactions. Please try again later.');
+      }
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [user?.id]);
 
-  // Fetch transactions from the backend
+  // Fetch transactions on component mount
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        setIsLoading(true);
-        const data = await transactionService.getTransactions(user?.id);
-        console.log('API response data:', data);
-        // Add temporary logging to see raw data
-        if (data.data && data.data.length > 0) {
-          const sample = data.data[0];
-          if (sample.category) {
-            console.log('Sample category:', sample.category, 'type:', typeof sample.category);
-          }
-        }
-        
-        setTransactions(data.data || []);
-        setHasLinkedAccounts(true);
-        setError(null);
-      } catch (err: any) {
-        console.error('Error fetching transactions:', err);
-        // Handle the specific "no linked accounts" error case
-        if (err.response && err.response.status === 404 && 
-            err.response.data && err.response.data.error === 'no_linked_accounts') {
-          setHasLinkedAccounts(false);
-          setError(null);
-        } else {
-          setError('Could not load transactions. Please try again later.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchTransactions();
-  }, [user?.id]);
+  }, [fetchTransactions]);
+
+  // Add a function to refresh both cashback and transactions data
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    
+    // Clear cashback cache
+    if (user?.id) {
+      localStorage.removeItem(`cashback_${user.id}`);
+    }
+    
+    // Force refresh transactions (which clears its own cache)
+    fetchTransactions(true);
+  };
 
   // Function to get color for an account/institution
   const getAccountColor = (institution_name?: string, account_name?: string): string | undefined => {
@@ -273,8 +367,22 @@ const Transactions: React.FC = () => {
 
   return (
     <div className="transactions-page">
-      <h1>Your Transactions</h1>
-      <p>View and analyze your recent financial activity</p>
+      <div className="card-header-wrapper">
+        <div className="card-title">
+          <h1>Your Transactions</h1>
+          <p>View and analyze your recent financial activity</p>
+        </div>
+        <div className="refresh-button-container">
+          <button 
+            onClick={handleRefresh} 
+            className="refresh-button"
+            disabled={isRefreshing}
+          >
+            <i className={`refresh-icon fa-solid ${isRefreshing ? 'fa-spinner fa-spin' : 'fa-rotate'}`}></i>
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </button>
+        </div>
+      </div>
       
       {/* Add cashback summary at the top */}
       {hasLinkedAccounts && !isLoading && !error && <CashbackSummary />}
@@ -341,7 +449,7 @@ const Transactions: React.FC = () => {
                 <span className="date">Date</span>
                 <span className="merchant">Merchant</span>
                 <span className="category">Category</span>
-                <span className="account account-column-header">Account</span>
+                <span className="account">Account</span>
                 <span className="amount">Amount</span>
               </div>
               
@@ -364,15 +472,12 @@ const Transactions: React.FC = () => {
                         style={accountColor ? { 
                           backgroundColor: accountColor, 
                           color: 'white',
-                          padding: '3px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.85rem',
-                          display: 'inline-block',
-                          lineHeight: '1.2',
-                          marginLeft: '0px'
+                          padding: '3px 10px',
+                          borderRadius: '10px',
+                          fontSize: '0.85rem'
                         } : undefined}
                       >
-                        {transaction.account_name || 'Unknown'}
+                        &nbsp;&nbsp;&nbsp;&nbsp;{transaction.account_name || 'Unknown'}
                       </span>
                       {transaction.institution_name && (
                         <span className="institution">

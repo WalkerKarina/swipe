@@ -21,7 +21,8 @@ const Profile: React.FC = () => {
     accounts, 
     linkToken, 
     isLoading, 
-    isRemoving, 
+    isRemoving,
+    refreshAccounts,
     openPlaidLink, 
     removeAccount: removePlaidAccount 
   } = usePlaidLink(user?.id);
@@ -36,6 +37,9 @@ const Profile: React.FC = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileUpdateError, setProfileUpdateError] = useState<string | null>(null);
+
+  // State for refresh button
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Custom removeAccount that retains function signature for compatibility
   const removeAccount = useCallback(async (accountId: string) => {
@@ -115,6 +119,18 @@ const Profile: React.FC = () => {
       setProfileUpdateError('Failed to update profile. Please try again.');
     } finally {
       setIsUpdatingProfile(false);
+    }
+  };
+
+  // Add a function to handle refreshing accounts
+  const handleRefreshAccounts = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshAccounts();
+    } catch (error) {
+      console.error('Error refreshing accounts:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -228,13 +244,32 @@ const Profile: React.FC = () => {
         <div className="bank-accounts-section">
           <div className="section-header">
             <h2>Linked Bank Accounts</h2>
-            <button 
-              onClick={handleOpenPlaidLink} 
-              className="link-account-button"
-              disabled={!linkToken || isRemoving}
-            >
-              Link New Account
-            </button>
+            <div className="account-buttons">
+              <button 
+                onClick={handleRefreshAccounts} 
+                className="refresh-accounts-button"
+                disabled={isLoading || isRemoving || isRefreshing}
+              >
+                {isRefreshing ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <span>Refreshing...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-refresh"></i>
+                    <span>Refresh</span>
+                  </>
+                )}
+              </button>
+              <button 
+                onClick={handleOpenPlaidLink} 
+                className="link-account-button"
+                disabled={!linkToken || isRemoving || isRefreshing}
+              >
+                Link New Account
+              </button>
+            </div>
           </div>
           
           {isLoading ? (

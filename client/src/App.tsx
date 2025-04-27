@@ -46,12 +46,6 @@ const Sidebar: React.FC = () => {
               <span>Card Rewards</span>
             </Link>
           </li>
-          <li>
-            <Link to="/recs" className={location.pathname === '/recs' ? 'active' : ''}>
-              <i className="fa-solid fa-star"></i>
-              <span>Recs</span>
-            </Link>
-          </li>
         </ul>
       </nav>
       <div className="sidebar-footer">

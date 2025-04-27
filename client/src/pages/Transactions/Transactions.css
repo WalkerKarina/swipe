@@ -2,30 +2,38 @@
 .transactions-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 2.5rem;
+  padding: 5rem 2.5rem;
   position: relative;
   min-height: 100vh;
   background-color: transparent;
   box-sizing: border-box;
 }
 
-.transactions-page h1 {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  padding-top: 3.5rem;
+.card-header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  position: relative;
 }
 
-.transactions-page p {
-  color: #666;
-  margin-bottom: 2rem;
-  font-size: 1rem;
+.card-title {
+  flex: 1;
+}
+
+.card-title h1 {
+  margin-bottom: 8px;
+}
+
+.card-title p {
+  color: #6e6e73;
+  margin-top: 0;
 }
 
 /* Cashback Summary Styles */
 .cashback-summary {
   margin-bottom: 2.5rem;
+  margin-top: 2rem;
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -55,10 +63,11 @@
   color: #5CAEA2;
 }
 
+/* Full-width cashback cards */
 .cashback-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0.75rem;
   padding: 1.5rem;
 }
 
@@ -216,6 +225,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
+  margin-top: 2rem;
   background-color: white;
   padding: 1.25rem;
   border-radius: 12px;
@@ -272,26 +282,20 @@
   border: 1px solid #f0f0f0;
 }
 
-.transaction-header,
-.transaction-item {
-  display: grid;
-  grid-template-columns: 0.8fr 1.5fr 1fr 1.5fr 0.8fr;
-  gap: 12px;
-  box-sizing: border-box;
-  text-align: left;
-}
-
+/* Create a consistent, unified style for all header cells */
 .transaction-header {
   background-color: #5CAEA2;
   color: white;
   font-weight: 600;
   border-radius: 12px 12px 0 0;
-  align-items: center;
   height: 60px;
   padding: 0 20px;
+  display: grid;
+  grid-template-columns: 0.8fr 1.5fr 1fr 1.5fr 0.8fr;
+  gap: 12px;
 }
 
-/* Style all spans in the header consistently */
+/* Make ALL header spans behave the same way */
 .transaction-header span {
   color: white;
   text-transform: uppercase;
@@ -299,31 +303,27 @@
   font-weight: 600;
   display: flex;
   align-items: center;
-  text-align: left;
+  height: 100%;
 }
 
-/* Only set flex properties if actually needed */
+/* Only difference is the horizontal alignment */
+.transaction-header .date,
+.transaction-header .merchant,
+.transaction-header .category,
+.transaction-header .account {
+  justify-content: flex-start;
+}
+
 .transaction-header .amount {
-  text-align: right;
-  display: flex;
   justify-content: flex-end;
 }
 
-/* Reset account column styling */
-.account {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: flex-start;
-  padding: 0;
-  margin: 0;
-}
-
-.account-name {
-  margin: 0;
-}
-
 .transaction-item {
+  display: grid;
+  grid-template-columns: 0.8fr 1.5fr 1fr 1.5fr 0.8fr;
+  gap: 12px;
+  box-sizing: border-box;
+  text-align: left;
   padding: 16px 20px;
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
@@ -389,18 +389,22 @@
   color: white !important;
 }
 
+/* Reset account column styling */
 .account {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: #555;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
 }
 
 .account-name {
+  margin: 0;
   font-weight: 500;
   transition: all 0.2s ease;
   max-width: 100%;
@@ -556,11 +560,43 @@
   margin: 0;
 }
 
+/* Fix the specific account column header alignment issue */
 .account-column-header {
-  text-align: left !important;
+  display: flex !important;
+  align-items: center !important;
   justify-content: flex-start !important;
+  height: 100% !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Account header should not have any special display properties */
+.transaction-header .account {
+  display: inline-flex !important; 
+  align-items: center !important;
+  height: 100% !important;
+  position: relative !important;
+  top: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  text-transform: uppercase !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: white !important;
+  flex-direction: row !important;
+  align-self: center !important;
+}
+
+/* Force all transaction header spans to align properly and consistently */
+.transaction-header > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
 }
 
 /* Make all spans in each grid cell left-aligned */
@@ -575,4 +611,147 @@
 .transaction-item .amount {
   text-align: right;
   justify-content: flex-end;
+}
+
+/* Make sure the amount header is properly aligned */
+.transaction-header .amount {
+  justify-content: flex-end !important;
+  align-items: center !important;
+  height: 100% !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+}
+
+.refresh-button-container {
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+}
+
+.refresh-button {
+  padding: 0.75rem 1.25rem;
+  background-color: #5CAEA2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+}
+
+.refresh-icon {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.refresh-button:hover {
+  background-color: #4a9d91;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.refresh-button:disabled .refresh-icon {
+  animation: spin 1.5s linear infinite;
+}
+
+.refresh-button:hover .refresh-icon {
+  transform: rotate(180deg);
+  transition: transform 0.5s ease;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Special override for the account in the header - must be different from account in rows */
+.transaction-header .account {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0 !important;
+  height: 100% !important;
+  color: white !important;
+}
+
+/* Special fix for the account header - remove all conflicting styles and start fresh */
+.transaction-header .account {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  align-self: center !important;
+  vertical-align: middle !important;
+  padding: 0 !important;
+  position: static !important;
+}
+
+/* Specifically target the transaction item account cells */
+.transaction-item .account {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  padding-left: 1px !important;
+  margin: 0 !important;
+  gap: 4px !important;
+}
+
+/* Fix the account name and institution alignment */
+.account-name, .institution {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Remove account-pill class since we're not using it anymore */
+.account-pill {
+  display: none;
+}
+
+/* Add hover effect directly to the account-name */
+.transaction-item:hover .account-name {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Add custom CSS for account name spacing */
+.pill-text {
+  position: relative;
+  display: inline-block;
+}
+
+.pill-text::before {
+  content: "";
+  display: inline-block;
+  width: 8px; /* Adjust this to control the amount of spacing */
+  height: 1px;
+  margin-right: 4px;
+}
+
+/* Force all transaction header spans to align properly and consistently */
+.transaction-header > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  align-self: center !important;
+  vertical-align: middle !important;
 } 

@@ -310,4 +310,64 @@
 @keyframes spinAnimation {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.account-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.refresh-accounts-button {
+  padding: 0.625rem 1rem;
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refresh-accounts-button:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+.refresh-accounts-button:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.refresh-accounts-button i {
+  font-size: 0.875rem;
+}
+
+/* Update the existing Link Account button style to match */
+.link-account-button {
+  padding: 0.625rem 1rem;
+  background-color: #5CAEA2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+
+.link-account-button:hover {
+  background-color: #4a9d91;
+  transform: translateY(-2px);
+}
+
+.link-account-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
 } 
