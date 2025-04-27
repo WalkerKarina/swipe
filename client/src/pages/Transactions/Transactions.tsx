@@ -32,14 +32,35 @@ const CashbackSummary: React.FC = () => {
 
   useEffect(() => {
     const fetchCashbackData = async () => {
+      if (!user?.id) return;
+      
       try {
         setIsLoading(true);
-        const response = await plaidService.getCashBackSummary(user?.id);
+        
+        // Try to get cached cashback data
+        const cachedData = localStorage.getItem(`cashback_${user.id}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached cashback data');
+            setCashbackData(data);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Fetch fresh data if no cache or cache expired
+        const response = await plaidService.getCashBackSummary(user.id);
         if (response && response.status === 'success' && response.data) {
           setCashbackData(response.data);
           
-          // Store cashback data in localStorage for other components to use
-          localStorage.setItem('cashback_data', JSON.stringify(response.data));
+          // Cache the new data
+          localStorage.setItem(`cashback_${user.id}`, JSON.stringify({
+            data: response.data,
+            timestamp: Date.now()
+          }));
         } else {
           setError('Could not load cashback data.');
         }
@@ -130,9 +151,33 @@ const Transactions: React.FC = () => {
   // Fetch cashback data to build the institution-to-color mapping
   useEffect(() => {
     const fetchCashbackData = async () => {
+      if (!user?.id) return;
+      
       try {
         setIsLoading(true);
-        const response = await plaidService.getCashBackSummary(user?.id);
+        
+        // Try to get cached cashback data first
+        const cachedData = localStorage.getItem(`cashback_${user.id}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached cashback data for color mapping');
+            setCashbackData(data);
+            
+            // Create a mapping from card name to its index for color matching
+            const mapping: Record<string, number> = {};
+            Object.keys(data.cashback_by_card).forEach((cardName, index) => {
+              mapping[cardName] = index;
+            });
+            setCardNameToIndexMap(mapping);
+            return;
+          }
+        }
+        
+        // Fetch fresh data if no cache or cache expired
+        const response = await plaidService.getCashBackSummary(user.id);
         if (response && response.status === 'success' && response.data) {
           setCashbackData(response.data);
           
@@ -142,15 +187,19 @@ const Transactions: React.FC = () => {
             mapping[cardName] = index;
           });
           setCardNameToIndexMap(mapping);
+          
+          // Cache the new data
+          localStorage.setItem(`cashback_${user.id}`, JSON.stringify({
+            data: response.data,
+            timestamp: Date.now()
+          }));
         }
       } catch (err: any) {
         console.error('Error fetching cashback data for color mapping:', err);
       }
     };
     
-    if (user?.id) {
-      fetchCashbackData();
-    }
+    fetchCashbackData();
   }, [user?.id]);
 
   // Function to fetch transactions - made into a callback so it can be reused for refresh
@@ -220,9 +269,16 @@ const Transactions: React.FC = () => {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  // Handle refresh button click
+  // Add a function to refresh both cashback and transactions data
   const handleRefresh = () => {
     setIsRefreshing(true);
+    
+    // Clear cashback cache
+    if (user?.id) {
+      localStorage.removeItem(`cashback_${user.id}`);
+    }
+    
+    // Force refresh transactions (which clears its own cache)
     fetchTransactions(true);
   };
 
