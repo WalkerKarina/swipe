@@ -16,6 +16,27 @@ interface TransactionSummary {
   cashback_by_card: Record<string, number>;
 }
 
+// Define card color mapping
+const cardColors: Record<string, string> = {
+  'Chase': '#ACE5DE',
+  'AMEX': '#2777E7',
+  'American Express': '#2777E7',
+  'Bank of America': '#9DE88C',
+  'Discover': '#388E3C',
+  'Capital One': '#FF5733',
+  'Citi': '#6A0DAD',
+  'Wells Fargo': '#FFC300',
+  'US Bank': '#FF5733',
+  'TD Bank': '#4CAF50',
+  'USAA': '#2196F3',
+  'Barclays': '#607D8B',
+  'PNC': '#FF9800',
+  // Add more cards as needed
+};
+
+// Default colors for cards not in the mapping
+const defaultColors = ['#ACE5DE', '#2777E7', '#9DE88C', '#388E3C', '#FF5733', '#6A0DAD', '#FFC300'];
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [cashbackSummary, setCashbackSummary] = useState<CashBackSummary | null>(null);
@@ -164,6 +185,37 @@ const Dashboard: React.FC = () => {
     };
   };
   
+  // Get linked cards from cashback summary
+  const getLinkedCards = () => {
+    if (!cashbackSummary || !cashbackSummary.rewards_by_category) {
+      return [];
+    }
+    
+    // Extract card names from rewards_by_category
+    return Object.keys(cashbackSummary.rewards_by_category);
+  };
+  
+  // Get color for a card
+  const getCardColor = (cardName: string, index: number) => {
+    // First try to match directly
+    if (cardColors[cardName]) {
+      return cardColors[cardName];
+    }
+    
+    // Then try to find partial matches (e.g., if "Chase Freedom" contains "Chase")
+    const partialMatch = Object.keys(cardColors).find(key => 
+      cardName.toLowerCase().includes(key.toLowerCase())
+    );
+    
+    if (partialMatch) {
+      return cardColors[partialMatch];
+    }
+    
+    // Use default colors with rotation if no match
+    return defaultColors[index % defaultColors.length];
+  };
+  
+  const linkedCards = getLinkedCards();
   const topCategory = getTopCategory();
   const topCard = getTopCard();
   
@@ -229,21 +281,41 @@ const Dashboard: React.FC = () => {
                   {/* X-axis (months) */}
                   <line x1="50" y1="250" x2="1150" y2="250" stroke="#ddd" strokeWidth="1" />
                   
-                  {/* Chase line */}
-                  <path d="M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150" 
-                        fill="none" stroke="#ACE5DE" strokeWidth="3" />
-                  
-                  {/* AMEX line */}
-                  <path d="M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200" 
-                        fill="none" stroke="#2777E7" strokeWidth="3" />
-                  
-                  {/* Bank of America line */}
-                  <path d="M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180" 
-                        fill="none" stroke="#9DE88C" strokeWidth="3" />
-                  
-                  {/* Discover line */}
-                  <path d="M50,180 Q200,150 350,100 T650,200 T950,100 T1150,120" 
-                        fill="none" stroke="#388E3C" strokeWidth="3" />
+                  {/* Render SVG paths only for linked cards */}
+                  {linkedCards.length > 0 ? (
+                    linkedCards.map((card, index) => {
+                      // Use predefined paths, but with dynamic colors
+                      const paths = [
+                        "M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150",
+                        "M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200",
+                        "M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180",
+                        "M50,180 Q200,150 350,100 T650,200 T950,100 T1150,180"
+                      ];
+                      
+                      const pathIndex = index % paths.length;
+                      return (
+                        <path 
+                          key={card}
+                          d={paths[pathIndex]} 
+                          fill="none" 
+                          stroke={getCardColor(card, index)} 
+                          strokeWidth="3" 
+                        />
+                      );
+                    })
+                  ) : (
+                    // Fallback to static paths if no linked cards
+                    <>
+                      <path d="M50,200 Q200,150 350,180 T650,100 T950,180 T1150,150" 
+                            fill="none" stroke="#ACE5DE" strokeWidth="3" />
+                      <path d="M50,220 Q200,250 350,200 T650,250 T950,150 T1150,200" 
+                            fill="none" stroke="#2777E7" strokeWidth="3" />
+                      <path d="M50,150 Q200,100 350,180 T650,150 T950,100 T1150,180" 
+                            fill="none" stroke="#9DE88C" strokeWidth="3" />
+                      <path d="M50,180 Q200,150 350,100 T650,200 T950,100 T1150,180" 
+                            fill="none" stroke="#388E3C" strokeWidth="3" />
+                    </>
+                  )}
                 </svg>
                 
                 {/* X-axis labels */}
@@ -263,24 +335,38 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
               
-              {/* Chart legend */}
+              {/* Dynamic Chart legend */}
               <div className="chart-legend">
-                <div className="legend-item">
-                  <span className="legend-color" style={{ backgroundColor: '#ACE5DE' }}></span>
-                  <span>Chase</span>
-                </div>
-                <div className="legend-item">
-                  <span className="legend-color" style={{ backgroundColor: '#2777E7' }}></span>
-                  <span>AMEX</span>
-                </div>
-                <div className="legend-item">
-                  <span className="legend-color" style={{ backgroundColor: '#9DE88C' }}></span>
-                  <span>Bank of America</span>
-                </div>
-                <div className="legend-item">
-                  <span className="legend-color" style={{ backgroundColor: '#388E3C' }}></span>
-                  <span>Discover</span>
-                </div>
+                {linkedCards.length > 0 ? (
+                  linkedCards.map((card, index) => (
+                    <div className="legend-item" key={card}>
+                      <span 
+                        className="legend-color" 
+                        style={{ backgroundColor: getCardColor(card, index) }}
+                      ></span>
+                      <span>{card}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#ACE5DE' }}></span>
+                      <span>Chase</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#2777E7' }}></span>
+                      <span>AMEX</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#9DE88C' }}></span>
+                      <span>Bank of America</span>
+                    </div>
+                    <div className="legend-item">
+                      <span className="legend-color" style={{ backgroundColor: '#388E3C' }}></span>
+                      <span>Discover</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
