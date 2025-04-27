@@ -32,6 +32,11 @@ export interface LoginData {
   password: string;
 }
 
+export interface ProfileUpdateData {
+  name?: string;
+  email?: string;
+}
+
 export interface LinkedAccount {
   id: string;
   name: string;
@@ -83,6 +88,23 @@ export const authService = {
 
   login: async (data: LoginData) => {
     const response = await api.post('/auth/login', data);
+    return response.data;
+  },
+
+  updateProfile: async (userId: string, data: ProfileUpdateData) => {
+    const response = await api.patch(`/auth/users/${userId}`, data);
+    return response.data;
+  },
+
+  uploadProfilePhoto: async (userId: string, photoFile: File) => {
+    const formData = new FormData();
+    formData.append('photo', photoFile);
+    
+    const response = await api.post(`/auth/users/${userId}/photo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 };
@@ -138,7 +160,15 @@ export const plaidService = {
   }) => {
     const response = await api.post('/plaid/link-account', accountData);
     return response.data;
-  }
+  },
+
+  // Get cashback card details
+  getCardDetails: async (cardName: string) => {
+    const response = await api.post('/chat/completions', {
+      card_type: cardName
+    });
+    return response.data;
+  },
 };
 
 export const transactionService = {

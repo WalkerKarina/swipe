@@ -2,7 +2,11 @@
 .transactions-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 2.5rem;
+  position: relative;
+  min-height: 100vh;
+  background-color: transparent;
+  box-sizing: border-box;
 }
 
 .transactions-page h1 {
@@ -10,11 +14,12 @@
   color: #333;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  padding-top: 3.5rem;
 }
 
 .transactions-page p {
   color: #666;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   font-size: 1rem;
 }
 
@@ -130,6 +135,20 @@
   
   .cashback-total {
     margin-top: 0.5rem;
+  }
+  
+  .transactions-page {
+    padding: 1.5rem;
+  }
+  
+  .transactions-page h1 {
+    padding-top: 3rem;
+  }
+  
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
   }
 }
 
@@ -453,7 +472,11 @@
   }
   
   .transactions-page {
-    padding: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .transactions-page h1 {
+    padding-top: 3rem;
   }
   
   .filters {

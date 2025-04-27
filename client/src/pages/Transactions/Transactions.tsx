@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { transactionService, plaidService, Transaction } from '../../services/api';
 import './Transactions.css';
 
@@ -25,6 +25,7 @@ const getCardColor = (index: number): string => {
 // Cashback Summary Component
 const CashbackSummary: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [cashbackData, setCashbackData] = useState<CashbackData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,9 @@ const CashbackSummary: React.FC = () => {
         const response = await plaidService.getCashBackSummary(user?.id);
         if (response && response.status === 'success' && response.data) {
           setCashbackData(response.data);
+          
+          // Store cashback data in localStorage for other components to use
+          localStorage.setItem('cashback_data', JSON.stringify(response.data));
         } else {
           setError('Could not load cashback data.');
         }
@@ -57,6 +61,15 @@ const CashbackSummary: React.FC = () => {
       currency: 'USD',
       minimumFractionDigits: 2
     }).format(amount);
+  };
+
+  const handleCardClick = (cardName: string) => {
+    console.log("Navigating to card details for:", cardName);
+    // Navigate to the card details page with the card name as a URL parameter
+    // and pass state to indicate it came from the transactions page
+    navigate(`/card-details/${encodeURIComponent(cardName)}`, { 
+      state: { from: 'transactions' } 
+    });
   };
 
   if (isLoading) {
@@ -84,7 +97,8 @@ const CashbackSummary: React.FC = () => {
           <div 
             key={cardName} 
             className="cashback-card"
-            style={{ backgroundColor: getCardColor(index) }}
+            style={{ backgroundColor: getCardColor(index), cursor: 'pointer' }}
+            onClick={() => handleCardClick(cardName)}
           >
             <h3>{cardName}</h3>
             <div className="cashback-amount">{formatCurrency(amount)}</div>
@@ -116,6 +130,7 @@ const Transactions: React.FC = () => {
   useEffect(() => {
     const fetchCashbackData = async () => {
       try {
+        setIsLoading(true);
         const response = await plaidService.getCashBackSummary(user?.id);
         if (response && response.status === 'success' && response.data) {
           setCashbackData(response.data);

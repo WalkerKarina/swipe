@@ -1,19 +1,99 @@
-.rewards-summary-page {
+.card-info-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 2.5rem;
+  position: relative;
+  min-height: 100vh;
+  background-color: transparent;
+  box-sizing: border-box;
 }
 
-.rewards-summary-page h1 {
+.card-header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  position: relative;
+}
+
+.card-title {
+  flex: 1;
+}
+
+.card-title h1 {
   font-size: 2rem;
   color: #333;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  padding-top: 0;
 }
 
-.rewards-summary-page p {
+.card-title p {
   color: #666;
-  margin-bottom: 2.5rem;
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+.refresh-button-container {
+  position: absolute;
+  top: 5rem;
+  right: 0;
+}
+
+.refresh-all-button {
+  padding: 0.75rem 1.25rem;
+  background-color: #5CAEA2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.refresh-icon {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.refresh-all-button:hover {
+  background-color: #4a9d91;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-all-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.refresh-all-button:disabled .refresh-icon {
+  animation: spinAnimation 1.5s linear infinite;
+}
+
+.refresh-all-button:hover .refresh-icon {
+  transform: rotate(180deg);
+  transition: transform 0.5s ease;
+}
+
+.card-info-page h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  padding-top: 3.5rem;
+}
+
+.card-info-page p {
+  color: #666;
+  margin-bottom: 2rem;
   font-size: 1rem;
 }
 
@@ -213,7 +293,25 @@
     grid-template-columns: 1fr;
   }
   
-  .rewards-summary-page {
-    padding: 1rem;
+  .card-info-page {
+    padding: 1.5rem;
+  }
+  
+  .card-header-wrapper {
+    padding-top: 3rem;
+  }
+  
+  .card-title h1 {
+    font-size: 1.8rem;
+  }
+  
+  .refresh-button-container {
+    top: 3rem;
+    right: 0;
+  }
+  
+  .refresh-all-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 } 
