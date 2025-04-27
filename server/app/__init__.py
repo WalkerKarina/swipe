@@ -18,7 +18,7 @@ def create_app():
     
     # Initialize CORS with specific configuration
     CORS(app, 
-         resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "https://www.smartswipe.co"]}},
+         resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "https://www.smartswipe.co", "http://smartswipe.co", "https://smartswipe.co"]}},
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
