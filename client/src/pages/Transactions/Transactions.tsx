@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { transactionService, plaidService, Transaction } from '../../services/api';
@@ -125,6 +125,7 @@ const Transactions: React.FC = () => {
   const [hasLinkedAccounts, setHasLinkedAccounts] = useState(true);
   const [cashbackData, setCashbackData] = useState<CashbackData | null>(null);
   const [cardNameToIndexMap, setCardNameToIndexMap] = useState<Record<string, number>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch cashback data to build the institution-to-color mapping
   useEffect(() => {
@@ -152,41 +153,78 @@ const Transactions: React.FC = () => {
     }
   }, [user?.id]);
 
-  // Fetch transactions from the backend
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        setIsLoading(true);
-        const data = await transactionService.getTransactions(user?.id);
-        console.log('API response data:', data);
-        // Add temporary logging to see raw data
-        if (data.data && data.data.length > 0) {
-          const sample = data.data[0];
-          if (sample.category) {
-            console.log('Sample category:', sample.category, 'type:', typeof sample.category);
+  // Function to fetch transactions - made into a callback so it can be reused for refresh
+  const fetchTransactions = useCallback(async (forceRefresh = false) => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Try to get cached transactions if not forcing a refresh
+      if (!forceRefresh) {
+        const cachedData = localStorage.getItem(`transactions_${user.id}`);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          // Use cache if it's less than 15 minutes old
+          if (cacheAge < 15 * 60 * 1000) {
+            console.log('Using cached transactions data');
+            setTransactions(data || []);
+            setHasLinkedAccounts(true);
+            setError(null);
+            setIsLoading(false);
+            return;
           }
         }
-        
-        setTransactions(data.data || []);
-        setHasLinkedAccounts(true);
-        setError(null);
-      } catch (err: any) {
-        console.error('Error fetching transactions:', err);
-        // Handle the specific "no linked accounts" error case
-        if (err.response && err.response.status === 404 && 
-            err.response.data && err.response.data.error === 'no_linked_accounts') {
-          setHasLinkedAccounts(false);
-          setError(null);
-        } else {
-          setError('Could not load transactions. Please try again later.');
-        }
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    fetchTransactions();
+      
+      // Fetch fresh data if no cache or forcing refresh
+      const data = await transactionService.getTransactions(user.id);
+      console.log('API response data:', data);
+      
+      if (data.data && data.data.length > 0) {
+        const sample = data.data[0];
+        if (sample.category) {
+          console.log('Sample category:', sample.category, 'type:', typeof sample.category);
+        }
+      }
+      
+      setTransactions(data.data || []);
+      setHasLinkedAccounts(true);
+      setError(null);
+      
+      // Cache the new data
+      localStorage.setItem(`transactions_${user.id}`, JSON.stringify({
+        data: data.data,
+        timestamp: Date.now()
+      }));
+      
+    } catch (err: any) {
+      console.error('Error fetching transactions:', err);
+      // Handle the specific "no linked accounts" error case
+      if (err.response && err.response.status === 404 && 
+          err.response.data && err.response.data.error === 'no_linked_accounts') {
+        setHasLinkedAccounts(false);
+        setError(null);
+      } else {
+        setError('Could not load transactions. Please try again later.');
+      }
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
   }, [user?.id]);
+
+  // Fetch transactions on component mount
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  // Handle refresh button click
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchTransactions(true);
+  };
 
   // Function to get color for an account/institution
   const getAccountColor = (institution_name?: string, account_name?: string): string | undefined => {
@@ -273,8 +311,20 @@ const Transactions: React.FC = () => {
 
   return (
     <div className="transactions-page">
-      <h1>Your Transactions</h1>
-      <p>View and analyze your recent financial activity</p>
+      <div className="transactions-header">
+        <div>
+          <h1>Your Transactions</h1>
+          <p>View and analyze your recent financial activity</p>
+        </div>
+        <button 
+          className="refresh-button" 
+          onClick={handleRefresh}
+          disabled={isLoading || isRefreshing}
+        >
+          <i className="fas fa-sync-alt refresh-icon"></i>
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
       
       {/* Add cashback summary at the top */}
       {hasLinkedAccounts && !isLoading && !error && <CashbackSummary />}
