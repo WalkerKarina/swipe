@@ -160,7 +160,15 @@ export const plaidService = {
   }) => {
     const response = await api.post('/plaid/link-account', accountData);
     return response.data;
-  }
+  },
+
+  // Get cashback card details
+  getCardDetails: async (cardName: string) => {
+    const response = await api.post('/chat/completions', {
+      card_type: cardName
+    });
+    return response.data;
+  },
 };
 
 export const transactionService = {

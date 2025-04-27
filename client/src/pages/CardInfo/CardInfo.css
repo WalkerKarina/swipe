@@ -1,17 +1,17 @@
-.rewards-summary-page {
+.card-info-page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-.rewards-summary-page h1 {
+.card-info-page h1 {
   font-size: 2rem;
   color: #333;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
-.rewards-summary-page p {
+.card-info-page p {
   color: #666;
   margin-bottom: 2.5rem;
   font-size: 1rem;
@@ -213,7 +213,7 @@
     grid-template-columns: 1fr;
   }
   
-  .rewards-summary-page {
+  .card-info-page {
     padding: 1rem;
   }
 } 

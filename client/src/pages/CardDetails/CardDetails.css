@@ -1,14 +1,167 @@
 .card-details-page {
-  min-height: 100vh;
-  height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.card-details-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+
+.card-details-header {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  background-color: #f7f7f7;
-  padding: 0.75rem 2rem;
-  width: 100%;
-  box-sizing: border-box;
-  overflow: auto;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-details-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.back-button {
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #e0e0e0;
+}
+
+.refresh-button {
+  padding: 0.5rem 1rem;
+  background-color: #5CAEA2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.refresh-button:hover {
+  background-color: #4a9d91;
+}
+
+.refresh-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.card-details-content {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.card-info-section, .rewards-section {
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.card-info-section h2, .rewards-section h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  color: #333;
+  border-bottom: 2px solid #5CAEA2;
+  padding-bottom: 0.5rem;
+}
+
+.card-info-item {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.card-info-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.card-info-item .label {
+  display: block;
+  font-weight: 600;
+  color: #5CAEA2;
+  margin-bottom: 0.25rem;
+}
+
+.card-info-item .value {
+  display: block;
+  color: #333;
+}
+
+.rewards-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reward-item {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background-color: white;
+  border-radius: 6px;
+  border-left: 3px solid #5CAEA2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.reward-item:last-child {
+  margin-bottom: 0;
+}
+
+.loading-container {
+  padding: 3rem;
+  text-align: center;
+}
+
+.error-message {
+  padding: 2rem;
+  text-align: center;
+  color: #d32f2f;
+}
+
+.error-message p {
+  margin-bottom: 1.5rem;
+}
+
+.error-message button {
+  margin: 0 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .card-details-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-details-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .card-details-header button {
+    width: 100%;
+  }
 }
 
 .logo-area {
@@ -22,14 +175,6 @@
 .logo {
   height: 160px;
   width: auto;
-}
-
-.card-details-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
 }
 
 .card-details-card {

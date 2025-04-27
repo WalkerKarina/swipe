@@ -8,6 +8,7 @@ import Login from './pages/Login/Login';
 import LinkAccounts from './pages/LinkAccounts';
 import RewardsSummary from './pages/RewardsSummary';
 import CardDetails from './pages/CardDetails';
+import CardInfo from './pages/CardInfo/CardInfo';
 import Dashboard from './pages/Dashboard';
 import logo from './assets/smartswipe-logo.png';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -37,6 +38,12 @@ const Sidebar: React.FC = () => {
             <Link to="/transactions" className={location.pathname === '/transactions' ? 'active' : ''}>
               <i className="fa-solid fa-shopping-cart"></i>
               <span>Transactions</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/card-info" className={location.pathname === '/card-info' ? 'active' : ''}>
+              <i className="fa-solid fa-credit-card"></i>
+              <span>Card Rewards</span>
             </Link>
           </li>
           <li>
@@ -119,8 +126,7 @@ const AppRoutes: React.FC = () => {
   const location = useLocation();
   const isPublicRoute = !user && (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/signup');
   const isSpecialRoute = location.pathname === '/link-accounts' || 
-                         location.pathname === '/rewards-summary' ||
-                         location.pathname === '/card-details';
+                         location.pathname === '/rewards-summary';
 
   return (
     <>
@@ -144,7 +150,7 @@ const AppRoutes: React.FC = () => {
               <RewardsSummary />
             </ProtectedRoute>
           } />
-          <Route path="/card-details" element={
+          <Route path="/card-details/:cardName" element={
             <ProtectedRoute>
               <CardDetails />
             </ProtectedRoute>
@@ -164,6 +170,11 @@ const AppRoutes: React.FC = () => {
           <Route path="/transactions" element={
             <ProtectedRoute>
               <Transactions />
+            </ProtectedRoute>
+          } />
+          <Route path="/card-info" element={
+            <ProtectedRoute>
+              <CardInfo />
             </ProtectedRoute>
           } />
           <Route path="/recs" element={
