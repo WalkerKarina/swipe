@@ -157,12 +157,13 @@
 
 /* User info in top-right corner */
 .user-info {
-  position: absolute;
+  position: fixed;
   top: 1.5rem;
-  right: 3rem;
+  right: 2rem;
   display: flex;
   align-items: center;
   z-index: 1000;
+  max-width: calc(100% - 260px);
 }
 
 .notification-icon {
@@ -420,6 +421,12 @@
   
   .user-profile-photo i {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 1240px) {
+  .user-info {
+    right: 2rem;
   }
 }
 

@@ -134,7 +134,10 @@ const CardDetails: React.FC = () => {
           <div className="error-message">
             <p>{error || 'Could not load card details.'}</p>
             <button className="back-button" onClick={handleBack}>Back to Card Rewards</button>
-            <button className="refresh-button" onClick={handleRefresh}>Try Again</button>
+            <button className="refresh-button" onClick={handleRefresh}>
+              <i className="fas fa-sync-alt refresh-icon"></i>
+              Try Again
+            </button>
           </div>
         </div>
       </div>
@@ -148,6 +151,7 @@ const CardDetails: React.FC = () => {
           <button className="back-button" onClick={handleBack}>← Back to Card Rewards</button>
           <h1>{cardDetails.extra_info.card_name}</h1>
           <button className="refresh-button" onClick={handleRefresh} disabled={isRefreshing}>
+            <i className="fas fa-sync-alt refresh-icon"></i>
             {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
           </button>
         </div>

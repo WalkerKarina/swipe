@@ -1,8 +1,11 @@
 .card-details-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  margin-top: 1.5rem;
+  padding: 5rem 2.5rem;
+  position: relative;
+  min-height: 100vh;
+  background-color: transparent;
+  box-sizing: border-box;
 }
 
 .card-details-container {
@@ -22,6 +25,8 @@
   border-bottom: 1px solid #f0f0f0;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card-details-header h1 {
@@ -35,38 +40,71 @@
 }
 
 .back-button {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   background-color: #f0f0f0;
   color: #333;
   border: none;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
 }
 
 .back-button:hover {
   background-color: #e0e0e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .refresh-button {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   background-color: #5CAEA2;
   color: white;
   border: none;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.refresh-icon {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .refresh-button:hover {
   background-color: #4a9d91;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-button:hover .refresh-icon {
+  transform: rotate(180deg);
+  transition: transform 0.5s ease;
 }
 
 .refresh-button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.refresh-button:disabled .refresh-icon {
+  animation: spinAnimation 1.5s linear infinite;
+}
+
+@keyframes spinAnimation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .card-details-content {
@@ -143,19 +181,31 @@
   padding: 2rem;
   text-align: center;
   color: #d32f2f;
+  background-color: #ffdddd;
+  border-left: 5px solid #f44336;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 1.5rem;
 }
 
 .error-message p {
   margin-bottom: 1.5rem;
+  font-size: 1rem;
+  color: #333;
 }
 
 .error-message button {
   margin: 0 0.5rem;
+  min-width: 120px;
 }
 
 @media (max-width: 768px) {
   .card-details-content {
     grid-template-columns: 1fr;
+  }
+  
+  .card-details-page {
+    padding: 1.5rem;
   }
   
   .card-details-header {
@@ -172,6 +222,11 @@
     padding: 0.5rem 0;
     order: -1;
     width: 100%;
+  }
+  
+  .refresh-button, .back-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -362,4 +417,24 @@
     font-size: 13px;
     padding: 10px 16px;
   }
+}
+
+.view-details-button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #5CAEA2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.view-details-button:hover {
+  background-color: #4a9d91;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 } 

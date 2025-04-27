@@ -163,18 +163,22 @@ const CardInfo: React.FC = () => {
 
   return (
     <div className="card-info-page">
-      <div className="card-info-header">
-        <div>
+      <div className="card-header-wrapper">
+        <div className="card-title">
           <h1>Your Credit Card Rewards</h1>
           <p>View all your credit card reward details in one place</p>
         </div>
-        <button 
-          className="refresh-all-button" 
-          onClick={handleRefreshAll}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? 'Refreshing...' : 'Refresh All Cards'}
-        </button>
+        
+        <div className="refresh-button-container">
+          <button 
+            className="refresh-all-button" 
+            onClick={handleRefreshAll}
+            disabled={isRefreshing}
+          >
+            <i className="fas fa-sync-alt refresh-icon"></i>
+            {isRefreshing ? 'Refreshing...' : 'Refresh All Cards'}
+          </button>
+        </div>
       </div>
       
       {error && <div className="error-message">{error}</div>}
