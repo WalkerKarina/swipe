@@ -1,0 +1,228 @@
+.rewards-summary-page {
+    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #f7f7f7;
+    padding: 0.75rem 2rem;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+  }
+  
+  .logo-area {
+    margin-bottom: 2rem;
+    margin-top: 0;
+    padding-left: 1rem;
+    width: 100%;
+    position: static;
+  }
+  
+  .logo {
+    height: 160px;
+    width: auto;
+  }
+  
+  .rewards-summary-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+  }
+  
+  .rewards-summary-content {
+    max-width: 1200px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .rewards-summary-content h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 3rem;
+    color: #111;
+    max-width: 800px;
+  }
+  
+  .text-highlight {
+    color: #5CAEA2;
+  }
+  
+  .rewards-comparison {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  
+  .time-period-label {
+    position: absolute;
+    top: -30px;
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+  }
+  
+  .rewards-card {
+    background-color: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05), 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid #000;
+  }
+  
+  .rewards-card.current {
+    border: 1px solid #000;
+  }
+  
+  .rewards-card.potential {
+    border: 1px solid #5CAEA2;
+  }
+  
+  .rewards-card h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+  
+  .rewards-amount {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #111;
+  }
+  
+  .rewards-amount.highlight {
+    color: #5CAEA2;
+  }
+  
+  .rewards-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 2rem;
+  }
+  
+  .percentage-increase {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #5CAEA2;
+    margin-bottom: 0.5rem;
+  }
+  
+  .arrow {
+    font-size: 2.5rem;
+    color: #5CAEA2;
+  }
+  
+  .continue-button {
+    max-width: 300px;
+    width: 100%;
+    padding: 1rem;
+    background-color: #5CAEA2;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 58px;
+    box-shadow: 0 4px 12px rgba(92, 174, 162, 0.2);
+  }
+  
+  .continue-button:hover {
+    background-color: #4e9e92;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(92, 174, 162, 0.25);
+  }
+  
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 0;
+  }
+  
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #e0e0e0;
+    border-radius: 50%;
+    border-top-color: #5CAEA2;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1.5rem;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .loading-state p {
+    font-size: 1.1rem;
+    color: #555;
+  }
+  
+  .error-state {
+    background-color: #fff5f5;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 2rem 0;
+    text-align: center;
+  }
+  
+  .error-state p {
+    margin-bottom: 1rem;
+    color: #555;
+  }
+  
+  .error-message {
+    color: #e53e3e;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  @media (max-width: 1024px) {
+    .rewards-comparison {
+      flex-direction: column;
+      gap: 2rem;
+    }
+  
+    .rewards-card {
+      max-width: 100%;
+    }
+  
+    .rewards-arrow {
+      flex-direction: row;
+      margin: 0;
+    }
+  
+    .percentage-increase {
+      margin-bottom: 0;
+      margin-right: 1rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .rewards-summary-content h1 {
+      font-size: 2rem;
+    }
+  
+    .rewards-amount {
+      font-size: 2.5rem;
+    }
+  } 
