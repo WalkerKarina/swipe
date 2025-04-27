@@ -35,9 +35,16 @@
   font-size: 1rem;
 }
 
+.card-refresh-container {
+  position: absolute;
+  top: 2rem;
+  right: 0;
+}
+
+/* Keep the original class for backward compatibility */
 .refresh-button-container {
   position: absolute;
-  top: 5rem;
+  top: 2rem;
   right: 0;
 }
 
@@ -305,8 +312,8 @@
     font-size: 1.8rem;
   }
   
+  .card-refresh-container,
   .refresh-button-container {
-    top: 3rem;
     right: 0;
   }
   

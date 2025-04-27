@@ -66,7 +66,12 @@ const Dashboard: React.FC = () => {
             return;
           }
         }
+      } else {
+        // If forcing refresh, clear the existing cache
+        localStorage.removeItem(`dashboard_${user.id}`);
       }
+      
+      console.log('Fetching fresh dashboard data');
       
       // Fetch cashback and transaction summary in parallel
       const [cashbackResponse, summaryData] = await Promise.all([
@@ -130,6 +135,20 @@ const Dashboard: React.FC = () => {
   // Fetch data on component mount
   useEffect(() => {
     fetchData();
+    
+    // Listen for the custom event from Card Rewards page
+    const handleCardsRefreshed = () => {
+      console.log('Detected cards refreshed event, updating dashboard');
+      fetchData(true);
+    };
+    
+    // Add event listener for card refresh events
+    window.addEventListener('cardsRefreshed', handleCardsRefreshed);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('cardsRefreshed', handleCardsRefreshed);
+    };
   }, [fetchData]);
   
   // Handle refresh button click
@@ -226,7 +245,16 @@ const Dashboard: React.FC = () => {
           <h1>Dashboard</h1>
           <p>Track your rewards and optimize your spending</p>
         </div>
-    
+        <div className="dashboard-refresh-container">
+          <button 
+            onClick={handleRefresh} 
+            className="refresh-button"
+            disabled={isRefreshing}
+          >
+            <i className={`refresh-icon fa-solid ${isRefreshing ? 'fa-spinner fa-spin' : 'fa-rotate'}`}></i>
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </button>
+        </div>
       </div>
       
       {loading ? (

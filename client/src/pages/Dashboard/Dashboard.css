@@ -95,6 +95,13 @@
   font-size: 1rem;
 }
 
+.dashboard-refresh-container {
+  position: absolute;
+  top: 1.5rem;
+  right: 0;
+}
+
+/* Keep the original for backward compatibility, but it won't be used in Dashboard anymore */
 .refresh-button-container {
   position: absolute;
   top: 5rem;

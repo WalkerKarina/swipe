@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { plaidService } from '../../services/api';
@@ -14,6 +14,12 @@ interface CardRewardDetails {
     signup_bonus: string;
   };
   raw_content: string;
+}
+
+interface CashbackData {
+  total_cashback: number;
+  cashback_by_card: Record<string, number>;
+  spending_by_card: Record<string, number>;
 }
 
 const CardInfo: React.FC = () => {
@@ -35,100 +41,173 @@ const CardInfo: React.FC = () => {
     ];
     return baseColors[index % baseColors.length];
   };
-
-  // Load all card rewards from localStorage or fetch from API if not available
-  useEffect(() => {
-    const loadAllCardRewards = async () => {
-      setIsLoading(true);
+  
+  // Function to fetch cashback data directly from API
+  const fetchCashbackData = useCallback(async (): Promise<string[]> => {
+    if (!user?.id) return [];
+    
+    try {
+      console.log('Fetching cashback data from API');
+      const response = await plaidService.getCashBackSummary(user.id);
       
-      try {
-        // Get all items from localStorage
-        const rewards: CardRewardDetails[] = [];
-        const cardNames: string[] = [];
+      if (response && response.status === 'success' && response.data) {
+        const cashbackData: CashbackData = {
+          total_cashback: response.data.total_cashback || 0,
+          cashback_by_card: response.data.cashback_by_card || {},
+          spending_by_card: response.data.spending_by_card || {}
+        };
         
-        // Get cashback data to extract card names
-        const cashbackDataString = localStorage.getItem('cashback_data');
-        if (cashbackDataString) {
-          try {
-            const cashbackData = JSON.parse(cashbackDataString);
-            if (cashbackData && cashbackData.cashback_by_card) {
-              Object.keys(cashbackData.cashback_by_card).forEach(cardName => {
-                cardNames.push(cardName);
-              });
-            }
-          } catch (e) {
-            console.error('Error parsing cashback data:', e);
+        // Cache the result
+        localStorage.setItem('cashback_data', JSON.stringify(cashbackData));
+        
+        // Return the card names
+        return Object.keys(cashbackData.cashback_by_card);
+      }
+    } catch (error) {
+      console.error('Error fetching cashback data:', error);
+    }
+    
+    return [];
+  }, [user?.id]);
+  
+  // Function to get card names from cached or fresh cashback data
+  const getCardNames = useCallback(async (forceRefresh: boolean): Promise<string[]> => {
+    // If forcing refresh, get directly from API
+    if (forceRefresh) {
+      return await fetchCashbackData();
+    }
+    
+    // Otherwise try to get from localStorage first
+    const cashbackDataString = localStorage.getItem('cashback_data');
+    if (cashbackDataString) {
+      try {
+        const cashbackData = JSON.parse(cashbackDataString);
+        if (cashbackData && cashbackData.cashback_by_card) {
+          const cardNames = Object.keys(cashbackData.cashback_by_card);
+          if (cardNames.length > 0) {
+            return cardNames;
           }
         }
-        
-        // If no card names from cashback data, use some defaults
-        if (cardNames.length === 0) {
-          cardNames.push('Chase Sapphire Preferred');
-          cardNames.push('Citi Double Cash');
-          cardNames.push('American Express Gold');
-          cardNames.push('Capital One Venture');
-        }
-        
-        // Try to load details for each card
-        const fetchPromises = cardNames.map(async (cardName) => {
-          // If refreshing or not in localStorage, fetch from API
-          if (isRefreshing || !localStorage.getItem(`card_details_${cardName}`)) {
-            try {
-              console.log(`Fetching card details for ${cardName} from API`);
-              const cardDetails = await plaidService.getCardDetails(cardName);
-              if (cardDetails) {
-                rewards.push(cardDetails);
-                // Cache the result
-                localStorage.setItem(`card_details_${cardName}`, JSON.stringify(cardDetails));
-              }
-            } catch (e) {
-              console.error(`Error fetching details for ${cardName} from API:`, e);
-              
-              // If error fetching and we have cached data, use that as fallback
-              if (!isRefreshing) {
-                const cachedData = localStorage.getItem(`card_details_${cardName}`);
-                if (cachedData) {
-                  try {
-                    rewards.push(JSON.parse(cachedData));
-                  } catch (parseError) {
-                    console.error(`Error parsing cached data for ${cardName}:`, parseError);
-                  }
+      } catch (e) {
+        console.error('Error parsing cashback data:', e);
+      }
+    }
+    
+    // If no card names from cache, fetch from API
+    return await fetchCashbackData();
+  }, [fetchCashbackData]);
+
+  // Load all card rewards 
+  const loadCardRewards = useCallback(async (forceRefresh: boolean = false) => {
+    setIsLoading(true);
+    
+    try {
+      // Get card names (either from cache or API)
+      let cardNames = await getCardNames(forceRefresh);
+      
+      // If no cards from API either, use defaults
+      if (cardNames.length === 0) {
+        cardNames = [
+          'Chase Sapphire Preferred',
+          'Citi Double Cash',
+          'American Express Gold',
+          'Capital One Venture'
+        ];
+      }
+      
+      console.log('Cards to load:', cardNames);
+      
+      const rewards: CardRewardDetails[] = [];
+      
+      // Fetch details for each card
+      const fetchPromises = cardNames.map(async (cardName) => {
+        // If refreshing or not in cache, fetch from API
+        if (forceRefresh || !localStorage.getItem(`card_details_${cardName}`)) {
+          try {
+            console.log(`Fetching card details for ${cardName} from API`);
+            const cardDetails = await plaidService.getCardDetails(cardName);
+            if (cardDetails) {
+              rewards.push(cardDetails);
+              // Cache the result
+              localStorage.setItem(`card_details_${cardName}`, JSON.stringify(cardDetails));
+            }
+          } catch (e) {
+            console.error(`Error fetching details for ${cardName} from API:`, e);
+            
+            // If error fetching and we have cached data, use that as fallback
+            if (!forceRefresh) {
+              const cachedData = localStorage.getItem(`card_details_${cardName}`);
+              if (cachedData) {
+                try {
+                  rewards.push(JSON.parse(cachedData));
+                } catch (parseError) {
+                  console.error(`Error parsing cached data for ${cardName}:`, parseError);
                 }
               }
             }
-          } else {
-            // Try to get from localStorage first when not refreshing
-            const cardDetailsString = localStorage.getItem(`card_details_${cardName}`);
-            if (cardDetailsString) {
-              try {
-                const cardDetails = JSON.parse(cardDetailsString);
-                rewards.push(cardDetails);
-              } catch (e) {
-                console.error(`Error parsing card details for ${cardName}:`, e);
-              }
+          }
+        } else {
+          // Try to get from localStorage when not refreshing
+          const cardDetailsString = localStorage.getItem(`card_details_${cardName}`);
+          if (cardDetailsString) {
+            try {
+              const cardDetails = JSON.parse(cardDetailsString);
+              rewards.push(cardDetails);
+            } catch (e) {
+              console.error(`Error parsing card details for ${cardName}:`, e);
             }
           }
-        });
-        
-        // Wait for all fetch operations to complete
-        await Promise.all(fetchPromises);
-        
-        setCardRewards(rewards);
-        setError(null);
-      } catch (e) {
-        console.error('Error loading card rewards:', e);
-        setError('Failed to load reward details.');
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
-    };
-    
-    loadAllCardRewards();
-  }, [isRefreshing]);
+        }
+      });
+      
+      // Wait for all fetch operations to complete
+      await Promise.all(fetchPromises);
+      
+      console.log(`Loaded ${rewards.length} card reward details`);
+      setCardRewards(rewards);
+      setError(null);
+    } catch (e) {
+      console.error('Error loading card rewards:', e);
+      setError('Failed to load reward details.');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [getCardNames]);
+  
+  // Initial load on component mount
+  useEffect(() => {
+    loadCardRewards(false);
+  }, [loadCardRewards]);
+
+  // Effect to handle the refreshing state
+  useEffect(() => {
+    if (isRefreshing) {
+      loadCardRewards(true);
+    }
+  }, [isRefreshing, loadCardRewards]);
 
   const handleRefreshAll = () => {
     setIsRefreshing(true);
+    
+    // Clear card details from localStorage
+    for (const key in localStorage) {
+      if (key.startsWith('card_details_')) {
+        localStorage.removeItem(key);
+      }
+    }
+    
+    // Clear cashback data to force a refresh
+    localStorage.removeItem('cashback_data');
+    
+    // Also remove dashboard cache to ensure it refreshes with new data
+    if (user?.id) {
+      localStorage.removeItem(`dashboard_${user.id}`);
+    }
+    
+    // Dispatch custom event for other components to detect
+    const event = new Event('cardsRefreshed');
+    window.dispatchEvent(event);
   };
 
   const handleCardClick = (cardName: string) => {
