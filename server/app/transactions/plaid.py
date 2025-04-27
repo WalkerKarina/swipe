@@ -1470,7 +1470,7 @@ def chat_web_search():
         payload = {
             'model': "gpt-4o",
             "tools": [{"type": "web_search_preview"}],
-            "input": f"What are the current reward categories and deals for the {card_type} card?",
+            "input": f"What are is the current rewards category {card_type} card? Visit the official {card_type} website for more information.",
             'max_output_tokens': data.get('max_output_tokens', 500),
             'temperature': data.get('temperature', 0.7),
         }
